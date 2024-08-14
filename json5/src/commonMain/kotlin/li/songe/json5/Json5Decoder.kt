@@ -1,17 +1,8 @@
 package li.songe.json5
 
 import kotlinx.serialization.json.*
-import java.lang.StringBuilder
 import kotlin.collections.set
-import kotlin.let
 import kotlin.ranges.contains
-import kotlin.text.endsWith
-import kotlin.text.getOrNull
-import kotlin.text.substring
-import kotlin.text.toDouble
-import kotlin.text.toInt
-import kotlin.text.toLong
-import kotlin.text.trimEnd
 
 // https://spec.json5.org/
 internal class Json5Decoder(private val input: CharSequence) {
@@ -123,12 +114,7 @@ internal class Json5Decoder(private val input: CharSequence) {
         if (c == '\\') {
             i++
             next('u')
-            repeat(4) {
-                if (!isHexDigit(char)) {
-                    stop()
-                }
-                i++
-            }
+            readHex(4)
             val n = input.substring(i - 4, i).toInt(16).toChar()
             if (!isIdStartChar(n)) {
                 stop()
@@ -138,18 +124,13 @@ internal class Json5Decoder(private val input: CharSequence) {
             stop()
         } else {
             sb.append(c)
+            i++
         }
-        i++
         while (!end) {
             if (char == '\\') {
                 i++
                 next('u')
-                repeat(4) {
-                    if (!isHexDigit(char)) {
-                        stop()
-                    }
-                    i++
-                }
+                readHex(4)
                 val n = input.substring(i - 4, i).toInt(16).toChar()
                 if (!isIdContinueChar(n)) {
                     stop()
@@ -194,6 +175,15 @@ internal class Json5Decoder(private val input: CharSequence) {
         return JsonArray(list)
     }
 
+    private fun readHex(len: Int) {
+        repeat(len) {
+            if (!isHexDigit(char)) {
+                stop()
+            }
+            i++
+        }
+    }
+
     private fun readString(): String {
         val wrapChar = char!!
         i++
@@ -217,24 +207,14 @@ internal class Json5Decoder(private val input: CharSequence) {
 
                         'x' -> {
                             i++
-                            repeat(2) {
-                                if (!isHexDigit(char)) {
-                                    stop()
-                                }
-                                i++
-                            }
+                            readHex(2)
                             val hex = input.substring(i - 2, i)
                             sb.append(hex.toInt(16).toChar())
                         }
 
                         'u' -> {
                             i++
-                            repeat(4) {
-                                if (!isHexDigit(char)) {
-                                    stop()
-                                }
-                                i++
-                            }
+                            readHex(4)
                             val hex = input.substring(i - 4, i)
                             sb.append(hex.toInt(16).toChar())
                         }
@@ -450,16 +430,23 @@ internal class Json5Decoder(private val input: CharSequence) {
                             input.substring(start, i)
                         }
                     }
-                    if (isPowerStartChar(char)) {
-                        start = i
-                        readNumberPower()
-                        val power = input.substring(start, i)
-                        (numPart + power).toDouble()
+                    if (numPart == "0") { // 0e233 -> 0
+                        if (isPowerStartChar(char)) {
+                            readNumberPower()
+                        }
+                        0L
                     } else {
-                        if (hasPoint) {
-                            numPart.toDouble()
+                        if (isPowerStartChar(char)) {
+                            start = i
+                            readNumberPower()
+                            val power = input.substring(start, i)
+                            (numPart + power).toDouble()
                         } else {
-                            numPart.run { toLongOrNull() ?: toDouble() }
+                            if (hasPoint) {
+                                numPart.toDouble()
+                            } else {
+                                numPart.run { toLongOrNull() ?: toDouble() }
+                            }
                         }
                     }
                 }
