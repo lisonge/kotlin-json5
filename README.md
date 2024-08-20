@@ -5,8 +5,7 @@ kotlin multiplatform json5 for [kotlinx.serialization](https://github.com/Kotlin
 ## usage
 
 ```kotlin
-implementation("io.github.lisonge:json5:0.0.3")
-// TODO io.github.lisonge will change to li.songe
+implementation("li.songe:json5:0.0.3")
 ```
 
 Json5String -> JsonElement
