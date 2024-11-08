@@ -23,10 +23,12 @@ val formatted: String = Json5.encodeToString(element, 2)
 interop with `kotlinx.serialization`
 
 ```kotlin
-val json = Json {
+val json = kotlinx.serialization.json.Json {
   // add your json config
   ignoreUnknownKeys = true
 }
+
+@kotlinx.serialization.Serializable
 data class A(val id:Int)
 
 // Json5String -> T
