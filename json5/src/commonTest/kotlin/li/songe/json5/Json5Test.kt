@@ -34,7 +34,7 @@ class Json5Test {
         )
         assertEquals(
             p5(" {\u0024_:1,_$:2,a\u200C:3} "),
-            p(" {\"\$_\":1,\"_\$\":2,\"a\u200C\":3} "),
+            p(" {\"\$_\":1,\"_$\":2,\"a\u200C\":3} "),
         )
         assertEquals(
             p5(""" {ùńîċõďë:9} """),
@@ -42,7 +42,7 @@ class Json5Test {
         )
         assertEquals(
             p5(" {\\u0061\\u0062:1,\\u0024\\u005F:2,\\u005F\\u0024:3} "),
-            p(" {\"ab\":1,\"\$_\":2,\"_\$\":3} "),
+            p(" {\"ab\":1,\"\$_\":2,\"_$\":3} "),
         )
         assertEquals(
             p5(""" {"__proto__":1} """).jsonObject["__proto__"],
@@ -209,9 +209,15 @@ class Json5Test {
 
     @Test
     fun format() {
-        val element = Json5.parseToJson5Element("{'a-1':1,b:{c:['d',{f:233}]}}")
+        val element = Json5.parseToJson5Element("{'a-1':1,b:{c:['d',{f:233,h:'str'}]}}")
         println("element: $element")
-        val formatted = Json5.encodeToString(element, 2)
+        val option = Json5EncoderConfig(
+            indent = "\u0020\u0020",
+            singleQuote = true,
+            unquotedKey = true,
+            trailingComma = false,
+        )
+        val formatted = Json5.encodeToString(element, option)
         println("formatted:\n$formatted")
     }
 }

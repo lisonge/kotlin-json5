@@ -92,7 +92,7 @@ private val escapeReplacements = hashMapOf(
     '\u2029' to "\\u2029",
 )
 
-internal fun stringifyString(value: String, singleQuote: Boolean = true): String {
+internal fun stringifyString(value: String, singleQuote: Boolean): String {
     // https://github.com/json5/json5/blob/main/lib/stringify.js
     val wrapChar = if (singleQuote) '\'' else '"'
     val sb = StringBuilder()
@@ -133,17 +133,17 @@ internal fun stringifyString(value: String, singleQuote: Boolean = true): String
     return sb.toString()
 }
 
-internal fun stringifyKey(key: String, singleQuote: Boolean = true): String {
-    if (key.isEmpty()) {
-        return stringifyString(key, singleQuote)
+internal fun stringifyKey(value: String, singleQuote: Boolean, unquotedKey: Boolean): String {
+    if (value.isEmpty() || !unquotedKey) {
+        return stringifyString(value, singleQuote)
     }
-    if (!isIdStartChar(key[0])) {
-        return stringifyString(key, singleQuote)
+    if (!isIdStartChar(value[0])) {
+        return stringifyString(value, singleQuote)
     }
-    for (c in key) {
+    for (c in value) {
         if (!isIdContinueChar(c)) {
-            return stringifyString(key, singleQuote)
+            return stringifyString(value, singleQuote)
         }
     }
-    return key
+    return value
 }
