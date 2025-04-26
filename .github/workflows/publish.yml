@@ -29,4 +29,4 @@ jobs:
       - run: chmod 777 ./gradlew
 
       - name: Publish to Maven Central
-        run: ./gradlew publishToMavenCentral --no-configuration-cache
+        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache

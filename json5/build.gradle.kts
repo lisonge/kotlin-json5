@@ -24,6 +24,7 @@ kotlin {
     }
 }
 
+// tip: it will take about 1 hour after GitHub Actions finished
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL)
     signAllPublications()
