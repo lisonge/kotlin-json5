@@ -23,11 +23,10 @@ jobs:
           echo mavenCentralPassword='${{ secrets.OSSRH_PASSWORD }}' >> gradle.properties
           echo signing.keyId='${{ secrets.OSSRH_GPG_SECRET_KEY_ID }}' >> gradle.properties
           echo signing.password='${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}' >> gradle.properties
-          echo ${{ secrets.OSSRH_GPG_SECRET_FILE_BASE64 }} | base64 --decode > ${{ github.workspace }}/secring.gpg
           echo signing.secretKeyRingFile='${{ github.workspace }}/secring.gpg' >> gradle.properties
-          echo RELEASE_SIGNING_ENABLED='true' >> gradle.properties
+          echo ${{ secrets.OSSRH_GPG_SECRET_FILE_BASE64 }} | base64 --decode > ${{ github.workspace }}/secring.gpg
 
       - run: chmod 777 ./gradlew
 
       - name: Publish to Maven Central
-        run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
+        run: ./gradlew publishToMavenCentral --no-configuration-cache
