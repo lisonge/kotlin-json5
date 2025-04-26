@@ -7,7 +7,7 @@ its principle is to convert a JSON5 string into a valid JsonElement object, whic
 ## Usage
 
 ```kotlin
-implementation("li.songe:json5:0.0.1")
+implementation("li.songe:json5:0.2.0")
 ```
 
 ## Decode

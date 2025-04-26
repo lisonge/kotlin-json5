@@ -25,5 +25,7 @@ jobs:
           echo signing.secretKeyRingFile='${{ github.workspace }}/secring.gpg' >> gradle.properties
           echo RELEASE_SIGNING_ENABLED='true' >> gradle.properties
 
+      - run: chmod 777 ./gradlew
+
       - name: Publish to Maven Central
         run: ./gradlew publishAndReleaseToMavenCentral --no-configuration-cache
