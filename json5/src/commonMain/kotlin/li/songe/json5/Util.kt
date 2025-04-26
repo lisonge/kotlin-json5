@@ -68,16 +68,8 @@ internal fun isWhiteSpace(c: Char?): Boolean {
     }
 }
 
-internal fun isNewLine(c: Char?): Boolean {
-    c ?: return false
-    return when (c) {
-        '\u000A' -> true
-        '\u000D' -> true
-        '\u2028' -> true
-        '\u2029' -> true
-        else -> false
-    }
-}
+// https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L222-L225
+internal val newLineChars = "\u000A\u000D\u2028\u2029".toCharArray()
 
 private val escapeReplacements = hashMapOf(
     '\\' to "\\\\",

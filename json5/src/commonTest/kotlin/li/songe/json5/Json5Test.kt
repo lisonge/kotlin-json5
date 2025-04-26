@@ -103,26 +103,19 @@ class Json5Test {
         // kotlinx.serialization will keep the sign of -0
         assertEquals(
             p5(""" [-1,+2,-.1,-0] """),
-            JsonArray(listOf(JsonPrimitive(-1), JsonPrimitive(2), JsonPrimitive(-0.1), JsonPrimitive(-0))),
+            JsonArray(listOf(JsonPrimitive(-1), JsonPrimitive(2), p("-0.1"), p("-0"))),
         )
         assertEquals(
-            p5(""" [.1,.23] """),
-            p(""" [0.1, 0.23] """),
+            p5(""" [1., .1, .23] """),
+            p(""" [1, 0.1, 0.23] """),
         )
-        // 1e1 is integer in js, but double in kotlin
         assertEquals(
-            p5(""" [1e0,1e1,1e01,1.e0,1.1e0,1e-1,1e+1] """),
-            JsonArray(
-                listOf(
-                    JsonPrimitive(1e0),
-                    JsonPrimitive(1e1),
-                    JsonPrimitive(1e01),
-                    JsonPrimitive(1.0e0),
-                    JsonPrimitive(1.1e0),
-                    JsonPrimitive(1e-1),
-                    JsonPrimitive(1e+1)
-                )
-            ),
+            p5(""" [1.e+3, .1e+3] """),
+            p(""" [1e+3, 0.1e+3] """),
+        )
+        assertEquals(
+            p5(""" [1e0,1e1,1e01,1.0e0,1.1e0,1e-1,1e+1] """),
+            p(""" [1e0,1e1,1e01,1.0e0,1.1e0,1e-1,1e+1] """)
         )
         assertEquals(
             p5(""" [0x1,0x10,0xff,0xFF] """),
@@ -133,32 +126,30 @@ class Json5Test {
             p(""" [Infinity,-Infinity] """),
         )
         assertEquals(
-            p5(""" NaN """),
-            p(""" NaN """),
-        )
-        assertEquals(
-            p5(""" -NaN """),
-            JsonPrimitive(-Double.NaN),
+            p5(""" [NaN,-NaN] """),
+            p(""" [NaN,-NaN] """),
         )
         assertEquals(
             p5(""" 1 """),
             p(""" 1 """),
         )
-        // json5: e, json: E
+
         assertEquals(
-            p5(""" +1.23e100 """),
-            JsonPrimitive(1.23e100),
+            p5(""" [+1.23e100, 1E2, ] """),
+            p(""" [1.23e100, 1E2] """),
         )
-        // json5: 1, json: 0x1
+
+        // test hex
         assertEquals(
             p5(""" 0x1 """),
-            JsonPrimitive(0x1),
+            p(""" 1 """),
         )
-        // current json5 not support big int
-//        assertEquals(
-//            p5(""" -0x0123456789abcdefABCDEF """),
-//            p(""" -0x0123456789abcdefABCDEF """),
-//        )
+
+        // test big int
+        assertEquals(
+            p5(""" [-0x0123456789abcdefABCDEF, ] """),
+            p(""" [-1375488932539311409843695 ] """),
+        )
 
         // strings
         assertEquals(
@@ -201,15 +192,11 @@ class Json5Test {
             p5("{\t\u000B\u000C \u00A0\uFEFF\n\r\u2028\u2029\u2003}"),
             p(""" {} """),
         )
-//        assertEquals(
-//            p5("""  """),
-//            p("""  """),
-//        )
     }
 
     @Test
     fun format() {
-        val element = Json5.parseToJson5Element("{'a-1':1,b:{c:['d',{f:233,h:'str'}]}}")
+        val element = Json5.parseToJson5Element("{'a-1':1,b:{c:['d',{f:233,h:'str'}, NaN]}}")
         println("element: $element")
         val option = Json5EncoderConfig(
             indent = "\u0020\u0020",
@@ -219,5 +206,12 @@ class Json5Test {
         )
         val formatted = Json5.encodeToString(element, option)
         println("formatted:\n$formatted")
+    }
+
+    @Test
+    fun range() {
+        val input = "{x:+NaN /*233*/ //com\n,'':[]}"
+        val ranges = Json5.parseToJson5Ranges(input).map { "${it.token}[${it.start}-${it.end}]" }
+        println("ranges:\n$ranges")
     }
 }

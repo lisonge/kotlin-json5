@@ -6,8 +6,12 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
 object Json5 {
-    fun parseToJson5Element(string: String): JsonElement {
-        return Json5Decoder(string).read()
+    fun parseToJson5Element(input: String): JsonElement {
+        return Json5Decoder(input).read()
+    }
+
+    fun parseToJson5Ranges(input: String): List<Json5Range> {
+        return Json5RangeDecoder(input).readRanges()
     }
 
     fun encodeToString(
