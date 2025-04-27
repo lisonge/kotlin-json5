@@ -9,6 +9,25 @@ plugins {
 kotlin {
     jvm()
 
+    // Kotlin/Native - Linux
+    linuxX64()
+    linuxArm64()
+
+    // Kotlin/Native - Windows
+    mingwX64()
+
+    // Kotlin/Native - Apple
+    iosArm64()
+    iosSimulatorArm64()
+    iosX64()
+    macosArm64()
+    macosX64()
+    tvosArm64()
+    tvosSimulatorArm64()
+    tvosX64()
+    watchosArm64()
+    watchosX64()
+
     sourceSets {
         commonMain {
             dependencies {
