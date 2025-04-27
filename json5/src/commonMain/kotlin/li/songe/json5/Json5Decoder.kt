@@ -1,7 +1,6 @@
 package li.songe.json5
 
 import kotlinx.serialization.json.*
-import java.math.BigInteger
 
 // https://spec.json5.org/
 internal open class Json5Decoder(val input: CharSequence, val writable: Boolean = true) {
@@ -115,7 +114,7 @@ internal open class Json5Decoder(val input: CharSequence, val writable: Boolean 
                     while (!end && isHexDigit(char)) {
                         i++
                     }
-                    Json5Number(BigInteger(input.substring(start + 2, i), 16).toString(10))
+                    Json5Number(hexToDecimal(input.substring(start + 2, i)))
                 } else {
                     var hasPoint = false // 1.2
                     while (!end) {
