@@ -45,7 +45,7 @@ JsonElement -> Json5String
 ```kotlin
 // import li.songe.json5.Json5
 
-val formatted: String = Json5.encodeToString(element, 2)
+val formatted: String = Json5.encodeToString(element)
 ```
 
 Object -> Json5String
