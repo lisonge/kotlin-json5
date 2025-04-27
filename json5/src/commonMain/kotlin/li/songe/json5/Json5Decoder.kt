@@ -35,7 +35,7 @@ internal open class Json5Decoder(val input: CharSequence, val writable: Boolean 
 
             else -> stop()
         }
-        if (root) {
+        if (root && !end) {
             readUseless()
             if (!end) {
                 stop()
