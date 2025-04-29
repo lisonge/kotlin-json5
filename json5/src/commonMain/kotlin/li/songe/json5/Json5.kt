@@ -10,10 +10,6 @@ object Json5 {
         return Json5Decoder(input).read()
     }
 
-    fun parseToJson5Ranges(input: String): List<Json5Range> {
-        return Json5RangeDecoder(input).readRanges()
-    }
-
     fun encodeToString(
         element: JsonElement,
         config: Json5EncoderConfig = Json5EncoderConfig(),

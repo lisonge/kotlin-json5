@@ -210,8 +210,6 @@ class Json5Test {
 
     @Test
     fun range() {
-        val input = "{x:+NaN /*233*/ //com\n,'':[]}"
-        val ranges = Json5.parseToJson5Ranges(input).map { "${it.token}[${it.start}-${it.end}]" }
-        println("ranges:\n$ranges")
+        p5(" 1 1")
     }
 }

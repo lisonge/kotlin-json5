@@ -1,6 +1,6 @@
 package li.songe.json5
 
-import kotlin.text.category
+import kotlinx.serialization.json.JsonElement
 
 private val unicodeLetterCategories = hashSetOf(
     CharCategory.UPPERCASE_LETTER,
@@ -18,13 +18,11 @@ private val unicodeIdCategories = hashSetOf(
     CharCategory.CONNECTOR_PUNCTUATION,
 )
 
-internal fun isIdStartChar(c: Char?): Boolean {
-    c ?: return false
-    return c.category in unicodeLetterCategories || c == '_' || c == '$'
+internal fun isIdStartChar(c: Char): Boolean {
+    return c == '_' || c == '$' || c.category in unicodeLetterCategories
 }
 
-internal fun isIdContinueChar(c: Char?): Boolean {
-    c ?: return false
+internal fun isIdContinueChar(c: Char): Boolean {
     return isIdStartChar(c) || c.category in unicodeIdCategories || c == '\u200C' || c == '\u200D'
 }
 
@@ -48,25 +46,10 @@ internal fun isHexStartChar(c: Char?): Boolean {
     return c == 'x' || c == 'X'
 }
 
-internal fun isWhiteSpace(c: Char?): Boolean {
-    c ?: return false
-    return when (c) {
-        '\u0009' -> true
-        in '\u000A'..'\u000D' -> true
-        '\u0020' -> true
-        '\u00A0' -> true
-        '\u2028' -> true
-        '\u2029' -> true
-        '\uFEFF' -> true
-
-        '\u1680' -> true
-        in '\u2000'..'\u200A' -> true
-        '\u202F' -> true
-        '\u205F' -> true
-        '\u3000' -> true
-        else -> false
-    }
-}
+// https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L135-L144
+// https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/unicode.js#L2
+internal const val whiteSpaceChars =
+    "\u0009\u000A\u000B\u000C\u000D\u0020\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF"
 
 // https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L222-L225
 internal val newLineChars = "\u000A\u000D\u2028\u2029".toCharArray()
@@ -138,4 +121,32 @@ internal fun stringifyKey(value: String, singleQuote: Boolean, unquotedKey: Bool
         }
     }
     return value
+}
+
+internal fun <T> MutableList<T>.pop(): T = removeAt(lastIndex)
+
+@Suppress("UNCHECKED_CAST")
+internal fun Any.toJsonMap() = this as MutableMap<String, JsonElement>
+
+@Suppress("UNCHECKED_CAST")
+internal fun Any.toJsonList() = this as MutableList<JsonElement>
+
+internal fun charToJson5Token(c: Char): Json5Token? = when (c) {
+    '{' -> Json5Token.LeftBrace
+    '}' -> Json5Token.RightBrace
+    '[' -> Json5Token.LeftBracket
+    ']' -> Json5Token.RightBracket
+    ':' -> Json5Token.Colon
+    ',' -> Json5Token.Comma
+    'n' -> Json5Token.NullLiteral
+    't', 'f' -> Json5Token.BooleanLiteral
+    in '0'..'9', '-', '+', '.', 'N', 'I' -> Json5Token.NumberLiteral
+    '\'', '"' -> Json5Token.StringLiteral
+    '/' -> Json5Token.Comment
+    in whiteSpaceChars -> Json5Token.Whitespace
+    else -> if (c == '\\' || isIdStartChar(c)) {
+        Json5Token.Property
+    } else {
+        null
+    }
 }
