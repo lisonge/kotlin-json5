@@ -226,6 +226,7 @@ internal fun BaseParser.readNumber(): Json5Number = when (char) {
     else -> readUNumber()
 }
 
+// https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L570
 internal fun BaseParser.readString(): String {
     val wrapChar = char!! // must be ' or "
     i++
@@ -241,7 +242,6 @@ internal fun BaseParser.readString(): String {
     val sb = StringBuilder()
     while (true) {
         when (char) {
-            null -> stop()
             wrapChar -> {
                 i++
                 break
@@ -319,6 +319,7 @@ internal fun BaseParser.readString(): String {
                         sb.append('\u0000')
                         i++
                         if (isDigit(char)) {
+                            // avoid octal ambiguity
                             stop()
                         }
                     }
@@ -344,6 +345,8 @@ internal fun BaseParser.readString(): String {
                     }
                 }
             }
+
+            null, '\n', '\r' -> stop()
 
             else -> {
                 sb.append(char)
