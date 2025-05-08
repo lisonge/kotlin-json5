@@ -53,15 +53,22 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
         }
     }
 
-    var lastToken: Json5Token? = null
+    fun buildTokenSeq() = sequence {
+        while (!end) {
+            val c = input[i]
+            val inMap = stack.lastOrNull() is MutableMap<*, *>
+            val token = charToJson5Token(c, inMap)
+            if (token == null) {
+                stop()
+            }
+            yield(token)
+        }
+    }
+
+    var lastVisibleToken: Json5Token? = null
 
     @Suppress("UNCHECKED_CAST")
-    fun read(): JsonElement {
-        val tokenSeq = sequence {
-            while (!end) {
-                yield(charToJson5Token(input[i]) ?: stop())
-            }
-        }
+    fun read(tokenSeq: Sequence<Json5Token> = buildTokenSeq()): JsonElement {
         for (token in tokenSeq) {
             if (skipToken(token)) {
                 continue
@@ -88,7 +95,7 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
                     }
 
                     Json5Token.Comma -> {
-                        if (x.isEmpty() || lastToken == Json5Token.Comma) {
+                        if (x.isEmpty() || lastVisibleToken == Json5Token.Comma) {
                             stop()
                         }
                     }
@@ -98,11 +105,11 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
 
                 is String -> {
                     if (token == Json5Token.Colon) {
-                        if (lastToken == Json5Token.Colon) {
+                        if (lastVisibleToken == Json5Token.Colon) {
                             stop()
                         }
                     } else {
-                        if (lastToken != Json5Token.Colon) {
+                        if (lastVisibleToken != Json5Token.Colon) {
                             stop()
                         }
                         startAny(token)
@@ -126,7 +133,7 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
                     }
 
                     Json5Token.Comma -> {
-                        if (x.isEmpty() || lastToken == Json5Token.Comma) {
+                        if (x.isEmpty() || lastVisibleToken == Json5Token.Comma) {
                             stop()
                         }
                     }
@@ -139,7 +146,7 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
             if (token is Json5Token.FixedChar) {
                 i++
             }
-            lastToken = token
+            lastVisibleToken = token
         }
         return (when (val c = stack.lastOrNull()) {
             is JsonElement -> c
@@ -147,5 +154,32 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
             is MutableMap<*, *> -> JsonObject(c.toJsonMap())
             else -> stop()
         })
+    }
+
+    fun readElementAndRange(): Pair<JsonElement, List<Json5Range>> {
+        var lastToken: Json5Token? = null
+        var lastIndex = 0
+        val tokenList = mutableListOf<Json5Range>()
+        val element = read(buildTokenSeq().onEach { token ->
+            lastToken?.let {
+                tokenList.add(
+                    Json5Range(
+                        start = lastIndex,
+                        end = i,
+                        token = it,
+                    )
+                )
+            }
+            lastIndex = i
+            lastToken = token
+        })
+        tokenList.add(
+            Json5Range(
+                start = lastIndex,
+                end = i,
+                token = lastToken!!,
+            )
+        )
+        return element to tokenList
     }
 }

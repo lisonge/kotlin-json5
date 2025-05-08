@@ -127,22 +127,28 @@ internal fun Any.toJsonMap() = this as MutableMap<String, JsonElement>
 @Suppress("UNCHECKED_CAST")
 internal fun Any.toJsonList() = this as MutableList<JsonElement>
 
-internal fun charToJson5Token(c: Char): Json5Token? = when (c) {
-    '{' -> Json5Token.LeftBrace
-    '}' -> Json5Token.RightBrace
-    '[' -> Json5Token.LeftBracket
-    ']' -> Json5Token.RightBracket
-    ':' -> Json5Token.Colon
-    ',' -> Json5Token.Comma
-    'n' -> Json5Token.NullLiteral
-    't', 'f' -> Json5Token.BooleanLiteral
-    in '0'..'9', '-', '+', '.', 'N', 'I' -> Json5Token.NumberLiteral
-    '\'', '"' -> Json5Token.StringLiteral
-    '/' -> Json5Token.Comment
-    in whiteSpaceChars -> Json5Token.Whitespace
-    else -> if (c == '\\' || isIdStartChar(c)) {
-        Json5Token.Property
-    } else {
-        null
+internal fun charToJson5Token(c: Char, inMap: Boolean = false): Json5Token? {
+    if (inMap && isIdStartChar(c)) {
+        // null, true, false, Infinity, NaN can be property name
+        return Json5Token.Property
+    }
+    return when (c) {
+        '{' -> Json5Token.LeftBrace
+        '}' -> Json5Token.RightBrace
+        '[' -> Json5Token.LeftBracket
+        ']' -> Json5Token.RightBracket
+        ':' -> Json5Token.Colon
+        ',' -> Json5Token.Comma
+        'n' -> Json5Token.NullLiteral
+        't', 'f' -> Json5Token.BooleanLiteral
+        in '0'..'9', '-', '+', '.', 'N', 'I' -> Json5Token.NumberLiteral
+        '\'', '"' -> Json5Token.StringLiteral
+        '/' -> Json5Token.Comment
+        in whiteSpaceChars -> Json5Token.Whitespace
+        else -> if (c == '\\' || isIdStartChar(c)) {
+            Json5Token.Property
+        } else {
+            null
+        }
     }
 }
