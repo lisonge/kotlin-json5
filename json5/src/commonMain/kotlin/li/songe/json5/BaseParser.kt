@@ -38,9 +38,10 @@ internal fun BaseParser.readComment() {
     when (input.getOrNull(i)) {
         '/' -> {
             i++
+            if (end) return
             val endIndex = input.indexOfAny(newLineChars, i)
             i = if (endIndex < 0) {
-                input.lastIndex
+                input.length
             } else {
                 endIndex + 1
             }
@@ -50,7 +51,7 @@ internal fun BaseParser.readComment() {
             i++
             val endIndex = input.indexOf("*/", i)
             if (endIndex < 0) {
-                i = input.lastIndex
+                i = input.length
                 stop()
             } else {
                 i = endIndex + 2
