@@ -1,14 +1,16 @@
 package li.songe.json5
 
-sealed class Json5Token() {
+sealed class Json5Token {
     data object Comment : Json5Token()
     data object Whitespace : Json5Token()
 
     sealed class FixedChar : Json5Token()
-    data object LeftBracket : FixedChar()
-    data object RightBracket : FixedChar()
-    data object LeftBrace : FixedChar()
-    data object RightBrace : FixedChar()
+    sealed class Bracket : FixedChar()
+    data object LeftBracket : Bracket()
+    data object RightBracket : Bracket()
+    sealed class Brace : FixedChar()
+    data object LeftBrace : Brace()
+    data object RightBrace : Brace()
     data object Comma : FixedChar()
     data object Colon : FixedChar()
 

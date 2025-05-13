@@ -365,7 +365,7 @@ private fun BaseParser.readUnicode(): Char {
     return input.substring(i - 4, i).toInt(16).toChar()
 }
 
-internal fun BaseParser.readObjectProperty(): String {
+internal fun BaseParser.readProperty(): String {
     val startChar = char!! // must be \ or idStartChar
     val realStartChar = if (startChar == '\\') {
         val n = readUnicode()

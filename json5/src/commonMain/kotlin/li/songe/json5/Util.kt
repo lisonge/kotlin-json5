@@ -128,10 +128,7 @@ internal fun Any.toJsonMap() = this as MutableMap<String, JsonElement>
 internal fun Any.toJsonList() = this as MutableList<JsonElement>
 
 internal fun charToJson5Token(c: Char, inMap: Boolean = false): Json5Token? {
-    if (inMap && isIdStartChar(c)) {
-        // null, true, false, Infinity, NaN can be property name
-        return Json5Token.Property
-    }
+    // inMap: null, true, false, Infinity, NaN can be property name
     return when (c) {
         '{' -> Json5Token.LeftBrace
         '}' -> Json5Token.RightBrace
@@ -139,9 +136,10 @@ internal fun charToJson5Token(c: Char, inMap: Boolean = false): Json5Token? {
         ']' -> Json5Token.RightBracket
         ':' -> Json5Token.Colon
         ',' -> Json5Token.Comma
-        'n' -> Json5Token.NullLiteral
-        't', 'f' -> Json5Token.BooleanLiteral
-        in '0'..'9', '-', '+', '.', 'N', 'I' -> Json5Token.NumberLiteral
+        'n' -> if (inMap) Json5Token.Property else Json5Token.NullLiteral
+        't', 'f' -> if (inMap) Json5Token.Property else Json5Token.BooleanLiteral
+        'N', 'I' -> if (inMap) Json5Token.Property else Json5Token.NumberLiteral
+        in '0'..'9', '-', '+', '.' -> Json5Token.NumberLiteral
         '\'', '"' -> Json5Token.StringLiteral
         '/' -> Json5Token.Comment
         in whiteSpaceChars -> Json5Token.Whitespace

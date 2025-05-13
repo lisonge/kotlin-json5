@@ -192,6 +192,11 @@ class Json5Test {
             p5("{\t\u000B\u000C \u00A0\uFEFF\n\r\u2028\u2029\u2003}"),
             p(""" {} """),
         )
+
+        assertEquals(
+            p5("{}//"),
+            p(""" {} """)
+        )
     }
 
     @Test
@@ -210,6 +215,14 @@ class Json5Test {
 
     @Test
     fun range() {
-        p5(" 1 1")
+        val (element, ranges) = Json5.parseToJson5ElementAndRange("{null:1 null:1}// \n")
+        println(element)
+        println(ranges.map { "${it.token}[${it.start},${it.end}]" })
+    }
+
+    @Test
+    fun loose() {
+        val ranges = Json5.parseToJsonLooseRange("{1:1+}//")
+        println(ranges.map { "${it.token}[${it.start},${it.end}]" })
     }
 }

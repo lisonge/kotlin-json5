@@ -32,8 +32,14 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
             Json5Token.LeftBrace -> stack.add(mutableMapOf<String, JsonElement>())
             Json5Token.LeftBracket -> stack.add(mutableListOf<JsonElement>())
             else -> {
-                val x0 = parseValueToken(token)
                 val x1 = stack.lastOrNull()
+                if (x1 is MutableList<*> && x1.isNotEmpty()) {
+                    // fix [1 1]
+                    if (lastVisibleToken != Json5Token.Comma) {
+                        stop()
+                    }
+                }
+                val x0 = parseValueToken(token)
                 when (x1) {
                     is String -> {
                         stack.pop()
@@ -77,8 +83,21 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
                 null -> startAny(token)
 
                 is MutableMap<*, *> -> when (token) {
-                    Json5Token.StringLiteral -> stack.add(readString())
-                    Json5Token.Property -> stack.add(readObjectProperty())
+                    Json5Token.StringLiteral -> {
+                        // fix {a:1 a:1}
+                        if (x.isNotEmpty() && lastVisibleToken != Json5Token.Comma) {
+                            stop()
+                        }
+                        stack.add(readString())
+                    }
+
+                    Json5Token.Property -> {
+                        if (x.isNotEmpty() && lastVisibleToken != Json5Token.Comma) {
+                            stop()
+                        }
+                        stack.add(readProperty())
+                    }
+
                     Json5Token.RightBrace -> {
                         if (stack.size > 1) {
                             stack.pop()
