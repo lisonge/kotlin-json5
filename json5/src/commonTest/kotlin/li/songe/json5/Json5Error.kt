@@ -18,5 +18,8 @@ class Json5Error {
         assertFails {
             Json5.parseToJson5Element("]")
         }
+        assertFails {
+            Json5.parseToJson5Element("{},}")
+        }
     }
 }
