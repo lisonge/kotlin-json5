@@ -2,12 +2,10 @@
 
 kotlin multiplatform json5 for [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
 
-its principle is to convert a JSON5 string into a valid JsonElement object, which facilitates interoperability with kotlinx serialization
-
 ## Usage
 
 ```kotlin
-implementation("li.songe:json5:0.2.0")
+implementation("li.songe:json5:0.3.0")
 ```
 
 ## Decode
@@ -36,6 +34,20 @@ val json = Json {
 data class A(val id:Int)
 
 val a = json.decodeFromJson5String<A>("{id:0, b:''}")
+```
+
+### Decode Json5Token
+
+Json5String -> Json5Token
+
+```kotlin
+val (element, ranges) = Json5.parseToJson5ElementAndRanges("{a:1}")
+```
+
+Loose Json5String -> Json5Token
+
+```kotlin
+val ranges = Json5.parseToJson5LooseRanges("{a:1,]{")
 ```
 
 ## Encode
