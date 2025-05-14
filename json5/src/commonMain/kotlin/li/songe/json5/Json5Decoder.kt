@@ -169,8 +169,20 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
         }
         return (when (val c = stack.lastOrNull()) {
             is JsonElement -> c
-            is MutableList<*> -> JsonArray(c.toJsonList())
-            is MutableMap<*, *> -> JsonObject(c.toJsonMap())
+            is MutableList<*> -> {
+                if (lastVisibleToken != Json5Token.RightBracket) {
+                    stop()
+                }
+                JsonArray(c.toJsonList())
+            }
+
+            is MutableMap<*, *> -> {
+                if (lastVisibleToken != Json5Token.RightBrace) {
+                    stop()
+                }
+                JsonObject(c.toJsonMap())
+            }
+
             else -> stop()
         })
     }
