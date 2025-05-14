@@ -215,14 +215,24 @@ class Json5Test {
 
     @Test
     fun range() {
-        val (element, ranges) = Json5.parseToJson5ElementAndRange("{null:1 null:1}// \n")
+        val (element, ranges) = Json5.parseToJson5ElementAndRanges("{null:1, null:1}// \n")
         println(element)
         println(ranges.map { "${it.token}[${it.start},${it.end}]" })
     }
 
     @Test
     fun loose() {
-        val ranges = Json5.parseToJsonLooseRange("{1:1+}//")
+        val input = "#{1:1+}//"
+        val ranges = Json5.parseToJson5LooseRanges(input)
         println(ranges.map { "${it.token}[${it.start},${it.end}]" })
+        val htmlText = ranges.joinToString("\n") { it ->
+            "<span data-name=\"${it.token?.run { this::class.simpleName }}\">${
+                input.substring(
+                    it.start,
+                    it.end
+                )
+            }</span>"
+        }
+        println(htmlText)
     }
 }
