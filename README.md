@@ -5,7 +5,7 @@ kotlin multiplatform json5 for [kotlinx.serialization](https://github.com/Kotlin
 ## Usage
 
 ```kotlin
-implementation("li.songe:json5:0.3.0")
+implementation("li.songe:json5:0.3.1")
 ```
 
 ## Decode
