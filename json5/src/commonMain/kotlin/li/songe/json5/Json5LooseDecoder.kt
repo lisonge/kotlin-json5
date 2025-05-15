@@ -128,6 +128,11 @@ internal class Json5LooseDecoder(override val input: CharSequence) : BaseParser 
                 }
             }
         }
+        if (ranges.isNotEmpty()) {
+            if (ranges.last().end != input.length) {
+                ranges.add(Json5LooseRange(ranges.last().end, input.length, null))
+            }
+        }
         return ranges
     }
 }
