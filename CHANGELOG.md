@@ -1,6 +1,5 @@
-# v0.3.0
+# v0.3.2
 
 ## What's Changed
 
-- optimize memory usage
-- add parse json5 token
+- fix: Json5LooseDecoder readLooseString
