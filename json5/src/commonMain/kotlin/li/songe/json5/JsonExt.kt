@@ -16,6 +16,6 @@ inline fun <reified T> Json.encodeToJson5String(
     )
 }
 
-inline fun <reified T> Json.decodeFromJson5String(value: String): T {
+inline fun <reified T> Json.decodeFromJson5String(value: CharSequence): T {
     return decodeFromJsonElement<T>(Json5.parseToJson5Element(value))
 }
