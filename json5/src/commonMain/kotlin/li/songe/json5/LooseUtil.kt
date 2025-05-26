@@ -44,6 +44,7 @@ internal fun BaseParser.readLooseComment() {
 
 internal fun BaseParser.readLooseString() {
     val wrapChar = char!!
+    i++
     while (true) {
         when (char) {
             null -> break
