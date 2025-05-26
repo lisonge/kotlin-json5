@@ -1,5 +1,5 @@
-# v0.3.2
+# v0.3.3
 
 ## What's Changed
 
-- fix: Json5LooseDecoder readLooseString
+- perf: use CharSequence replace String
