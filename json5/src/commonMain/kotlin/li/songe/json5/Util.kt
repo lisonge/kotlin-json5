@@ -127,7 +127,8 @@ internal fun Any.toJsonMap() = this as MutableMap<String, JsonElement>
 @Suppress("UNCHECKED_CAST")
 internal fun Any.toJsonList() = this as MutableList<JsonElement>
 
-internal fun charToJson5Token(c: Char, inMap: Boolean = false): Json5Token? {
+internal fun BaseParser.charToJson5Token(inMapLeft: Boolean = false): Json5Token? {
+    val c = input[i]
     // inMap: null, true, false, Infinity, NaN can be property name
     return when (c) {
         '{' -> Json5Token.LeftBrace
@@ -136,9 +137,9 @@ internal fun charToJson5Token(c: Char, inMap: Boolean = false): Json5Token? {
         ']' -> Json5Token.RightBracket
         ':' -> Json5Token.Colon
         ',' -> Json5Token.Comma
-        'n' -> if (inMap) Json5Token.Property else Json5Token.NullLiteral
-        't', 'f' -> if (inMap) Json5Token.Property else Json5Token.BooleanLiteral
-        'N', 'I' -> if (inMap) Json5Token.Property else Json5Token.NumberLiteral
+        'n' -> if (inMapLeft) Json5Token.Property else Json5Token.NullLiteral
+        't', 'f' -> if (inMapLeft) Json5Token.Property else Json5Token.BooleanLiteral
+        'N', 'I' -> if (inMapLeft) Json5Token.Property else Json5Token.NumberLiteral
         in '0'..'9', '-', '+', '.' -> Json5Token.NumberLiteral
         '\'', '"' -> Json5Token.StringLiteral
         '/' -> Json5Token.Comment

@@ -33,10 +33,10 @@ internal class Json5LooseDecoder(override val input: CharSequence) : BaseParser 
 
     fun read(): List<Json5LooseRange> {
         while (!end) {
-            val inMap = scopes.lastOrNull() == Json5Token.LeftBrace && lastVisibleToken.let {
+            val inMapLeft = scopes.lastOrNull() == Json5Token.LeftBrace && lastVisibleToken.let {
                 it == Json5Token.Comma || it == Json5Token.LeftBrace
             }
-            val token = charToJson5Token(input[i], inMap)
+            val token = charToJson5Token(inMapLeft)
             when (token) {
                 null -> {
                     i++
@@ -82,26 +82,27 @@ internal class Json5LooseDecoder(override val input: CharSequence) : BaseParser 
                 }
 
                 Json5Token.NullLiteral -> {
+                    val start = i
                     if (peekLiteral("null")) {
-                        val start = i
                         i += 4
                         addRange(start, end = i, token)
                     } else {
-                        i++
+                        readLooseProperty()
+                        addRange(start, end = i, Json5Token.Property)
                     }
                 }
 
                 Json5Token.BooleanLiteral -> {
+                    val start = i
                     if (peekLiteral("true")) {
-                        val start = i
                         i += 4
                         addRange(start, end = i, token)
                     } else if (peekLiteral("false")) {
-                        val start = i
                         i += 5
                         addRange(start, end = i, token)
                     } else {
-                        i++
+                        readLooseProperty()
+                        addRange(start, end = i, Json5Token.Property)
                     }
                 }
 
@@ -120,11 +121,7 @@ internal class Json5LooseDecoder(override val input: CharSequence) : BaseParser 
                 Json5Token.Property -> {
                     val start = i
                     readLooseProperty()
-                    if (i > start) {
-                        addRange(start, end = i, token)
-                    } else {
-                        i++
-                    }
+                    addRange(start, end = i, token)
                 }
             }
         }

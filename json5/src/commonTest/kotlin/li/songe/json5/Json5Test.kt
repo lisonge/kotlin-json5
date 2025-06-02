@@ -222,7 +222,7 @@ class Json5Test {
 
     @Test
     fun loose() {
-        val input = "#{1:1+}//"
+        val input = "#{1:1+,b:true1}//"
         val ranges = Json5.parseToJson5LooseRanges(input)
         println(ranges.map { "${it.token}[${it.start},${it.end}]" })
         val htmlText = ranges.joinToString("\n") { it ->
