@@ -1,5 +1,5 @@
-# v0.3.3
+# v0.3.4
 
 ## What's Changed
 
-- perf: use CharSequence replace String
+- perf: loose token to Json5Token.Property
