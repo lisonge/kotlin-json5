@@ -1,4 +1,6 @@
 import com.vanniktech.maven.publish.SonatypeHost
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -6,8 +8,22 @@ plugins {
     alias(libs.plugins.maven.publish)
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_11
+        languageVersion = KotlinVersion.KOTLIN_2_0
+        apiVersion = KotlinVersion.KOTLIN_2_0
+    }
+}
+
 kotlin {
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_11
+            languageVersion = KotlinVersion.KOTLIN_2_0
+            apiVersion = KotlinVersion.KOTLIN_2_0
+        }
+    }
 
     // Kotlin/Native - Linux
     linuxX64()
@@ -30,6 +46,10 @@ kotlin {
 
     sourceSets {
         commonMain {
+            compilerOptions {
+                languageVersion = KotlinVersion.KOTLIN_2_0
+                apiVersion = KotlinVersion.KOTLIN_2_0
+            }
             dependencies {
                 api(libs.kotlinx.serialization.json)
             }
