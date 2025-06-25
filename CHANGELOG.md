@@ -1,5 +1,5 @@
-# v0.3.4
+# v0.3.5
 
 ## What's Changed
 
-- perf: loose token to Json5Token.Property
+- perf: change compiler target to java11/kotlin2.0
