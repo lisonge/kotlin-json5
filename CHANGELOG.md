@@ -1,5 +1,5 @@
-# v0.3.5
+# v0.3.6
 
 ## What's Changed
 
-- perf: change compiler target to java11/kotlin2.0
+- perf: encodeToString by stack
