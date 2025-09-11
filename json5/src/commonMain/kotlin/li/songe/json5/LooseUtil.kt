@@ -43,7 +43,7 @@ internal fun BaseParser.readLooseComment() {
 }
 
 internal fun BaseParser.readLooseString() {
-    val wrapChar = char!!
+    val wrapChar = char // it must be ' or "
     i++
     while (true) {
         when (char) {

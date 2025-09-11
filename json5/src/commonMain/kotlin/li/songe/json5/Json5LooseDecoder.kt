@@ -36,8 +36,7 @@ internal class Json5LooseDecoder(override val input: CharSequence) : BaseParser 
             val inMapLeft = scopes.lastOrNull() == Json5Token.LeftBrace && lastVisibleToken.let {
                 it == Json5Token.Comma || it == Json5Token.LeftBrace
             }
-            val token = charToJson5Token(inMapLeft)
-            when (token) {
+            when (val token = charToJson5Token(inMapLeft)) {
                 null -> {
                     i++
                 }

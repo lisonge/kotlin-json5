@@ -229,7 +229,7 @@ internal fun BaseParser.readNumber(): Json5Number = when (char) {
 
 // https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L570
 internal fun BaseParser.readString(): String {
-    val wrapChar = char!! // must be ' or "
+    val wrapChar = char // must be ' or "
     i++
     // most
     for (j in i..input.lastIndex) {
@@ -242,7 +242,7 @@ internal fun BaseParser.readString(): String {
     }
     val sb = StringBuilder()
     while (true) {
-        when (char) {
+        when (val c1 = char) {
             wrapChar -> {
                 i++
                 break
@@ -250,7 +250,7 @@ internal fun BaseParser.readString(): String {
 
             '\\' -> {
                 i++
-                when (char) {
+                when (val c2 = char) {
                     null -> stop()
                     wrapChar -> {
                         sb.append(wrapChar)
@@ -341,7 +341,7 @@ internal fun BaseParser.readString(): String {
                     in '1'..'9' -> stop()
 
                     else -> {
-                        sb.append(char)
+                        sb.append(c2)
                         i++
                     }
                 }
@@ -350,7 +350,7 @@ internal fun BaseParser.readString(): String {
             null, '\n', '\r' -> stop()
 
             else -> {
-                sb.append(char)
+                sb.append(c1)
                 i++
             }
         }

@@ -61,10 +61,7 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
 
     fun buildTokenSeq() = sequence {
         while (!end) {
-            val token = charToJson5Token(stack.lastOrNull() is MutableMap<*, *>)
-            if (token == null) {
-                stop()
-            }
+            val token = charToJson5Token(stack.lastOrNull() is MutableMap<*, *>) ?: stop()
             yield(token)
         }
     }
