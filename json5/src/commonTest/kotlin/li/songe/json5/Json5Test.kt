@@ -205,12 +205,29 @@ class Json5Test {
         println("element: $element")
         val option = Json5EncoderConfig(
             indent = "\u0020\u0020",
-            singleQuote = true,
+            quotes = Quotes.single,
             unquotedKey = true,
             trailingComma = false,
         )
         val formatted = Json5.encodeToString(element, option)
         println("formatted:\n$formatted")
+    }
+
+    @Test
+    fun preferSingleQuote() {
+        val element = Json5.parseToJson5Element("{s:'hi\"there',d:'hi\\'there'}")
+        println("element: $element")
+        val option1 = Json5EncoderConfig(
+            indent = "  ",
+            quotes = Quotes.single,
+            unquotedKey = true,
+            trailingComma = false,
+        )
+        val formatted1 = Json5.encodeToString(element, option1)
+        println("formatted1:\n$formatted1")
+        val option2 = option1.copy(quotes = Quotes.preferSingle)
+        val formatted2 = Json5.encodeToString(element, option2)
+        println("formatted2:\n$formatted2")
     }
 
     @Test

@@ -7,14 +7,14 @@ import kotlinx.serialization.json.JsonPrimitive
 
 internal fun stringifyKey(key: String, config: Json5EncoderConfig): String {
     if (key.isEmpty() || !config.unquotedKey) {
-        return stringifyString(key, config.singleQuote)
+        return stringifyString(key, config.quotes)
     }
     if (!isIdStartChar(key[0])) {
-        return stringifyString(key, config.singleQuote)
+        return stringifyString(key, config.quotes)
     }
     for (c in key) {
         if (!isIdContinueChar(c)) {
-            return stringifyString(key, config.singleQuote)
+            return stringifyString(key, config.quotes)
         }
     }
     return key
@@ -33,9 +33,17 @@ private val escapeReplacements = hashMapOf(
     '\u2029' to "\\u2029",
 )
 
+const val single = '\''
+const val double = '"'
+
 // https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/stringify.js#L104
-internal fun stringifyString(value: String, singleQuote: Boolean): String {
-    val wrapChar = if (singleQuote) '\'' else '"'
+internal fun stringifyString(value: String, quotes: Quotes): String {
+    val wrapChar = when (quotes) {
+        Quotes.single -> single
+        Quotes.double -> double
+        Quotes.preferSingle -> if (value.contains(single) && !value.contains(double)) double else single
+        Quotes.preferDouble -> if (value.contains(double) && !value.contains(single)) single else double
+    }
     val sb = StringBuilder()
     sb.append(wrapChar)
     value.forEachIndexed { i, c ->
@@ -71,7 +79,7 @@ internal fun stringifyString(value: String, singleQuote: Boolean): String {
 }
 
 internal fun stringifyPrimitive(value: JsonPrimitive, config: Json5EncoderConfig): String = when {
-    value.isString -> stringifyString(value.content, config.singleQuote)
+    value.isString -> stringifyString(value.content, config.quotes)
     else -> value.content
 }
 
