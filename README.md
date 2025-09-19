@@ -80,3 +80,5 @@ data class A(val id:Int)
 
 val formatted: String = json.encodeToJson5String(A(id=0))
 ```
+
+or use [Json5EncoderConfig](json5/src/commonMain/kotlin/li/songe/json5/Json5EncoderConfig.kt)
