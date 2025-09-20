@@ -12,6 +12,16 @@ class Json5Test {
 
     private fun p(string: String) = Json.parseToJsonElement(string)
 
+    private fun e5(
+        string: String,
+        config: Json5EncoderConfig = Json5EncoderConfig(),
+    ) = Json5.encodeToString(JsonPrimitive(string), config)
+
+    private fun q5(
+        string: String,
+        strategy: Json5QuoteStrategy,
+    ) = e5(string, Json5EncoderConfig(quoteStrategy = strategy))
+
     // https://github.com/json5/json5/blob/main/test/parse.js
     @Test
     fun parse() {
@@ -205,9 +215,6 @@ class Json5Test {
         println("element: $element")
         val option = Json5EncoderConfig(
             indent = "\u0020\u0020",
-            singleQuote = true,
-            unquotedKey = true,
-            trailingComma = false,
         )
         val formatted = Json5.encodeToString(element, option)
         println("formatted:\n$formatted")
@@ -234,5 +241,55 @@ class Json5Test {
             }</span>"
         }
         println(htmlText)
+    }
+
+    @Test
+    fun quote() {
+        assertEquals(
+            q5(
+                """  "a'  """.trim(),
+                Json5QuoteStrategy.Single,
+            ),
+            """  '"a\''  """.trim(),
+        )
+        assertEquals(
+            q5(
+                """  "a'  """.trim(),
+                Json5QuoteStrategy.Double,
+            ),
+            """  "\"a'"  """.trim(),
+        )
+
+        assertEquals(
+            q5(
+                """  a"  """.trim(),
+                Json5QuoteStrategy.PreferSingle,
+            ),
+            """  'a"'  """.trim(),
+        )
+        assertEquals(
+            q5(
+                """  a'  """.trim(),
+                Json5QuoteStrategy.PreferSingle,
+            ),
+            """  "a'"  """.trim(),
+        )
+
+        assertEquals(
+            q5(
+                """  a'  """.trim(),
+                Json5QuoteStrategy.PreferDouble,
+            ),
+            """  "a'"  """.trim(),
+        )
+
+        assertEquals(
+            q5(
+                """  a"  """.trim(),
+                Json5QuoteStrategy.PreferDouble,
+            ),
+            """  'a"'  """.trim(),
+        )
+
     }
 }
