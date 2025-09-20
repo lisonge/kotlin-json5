@@ -1,5 +1,3 @@
-# v0.3.6
+# What's Changed
 
-## What's Changed
-
-- perf: encodeToString by stack
+- feat: support Json5QuoteStrategy (#1)
