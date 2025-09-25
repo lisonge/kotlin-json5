@@ -9,11 +9,18 @@ internal interface BaseParser {
         get() = i >= input.length
 }
 
+private fun Char.toVisibleString(): String {
+    if (code <= 0x20 || this in whiteSpaceChars) {
+        return "\\u${code.toString(16).padStart(4, '0')}"
+    }
+    return toString()
+}
+
 internal fun BaseParser.stop(): Nothing {
     if (end) {
-        error("Unexpected Char: EOF")
+        error("Unexpected Char: EOF with length ${input.length}")
     }
-    error("Unexpected Char: ${input[i]} at index $i")
+    error("Unexpected Char: ${input[i].toVisibleString()} at index $i with length ${input.length}")
 }
 
 internal fun BaseParser.next(c: Char) {
