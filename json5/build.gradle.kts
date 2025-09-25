@@ -66,7 +66,7 @@ kotlin {
 mavenPublishing {
     publishToMavenCentral()
     signAllPublications()
-    coordinates("li.songe", "json5", "0.4.0")
+    coordinates("li.songe", "json5", "0.4.1")
 
     val repoUrl = "https://github.com/lisonge/kotlin-json5"
     pom {

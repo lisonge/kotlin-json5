@@ -1,3 +1,3 @@
 # What's Changed
 
-- feat: support Json5QuoteStrategy (#1)
+- perf: make char to visible when error
