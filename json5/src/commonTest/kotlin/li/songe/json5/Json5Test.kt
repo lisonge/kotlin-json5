@@ -14,7 +14,7 @@ class Json5Test {
 
     private fun e5(
         string: String,
-        config: Json5EncoderConfig = Json5EncoderConfig(),
+        config: Json5EncoderConfig = Json5.encoderConfig,
     ) = Json5.encodeToString(JsonPrimitive(string), config)
 
     private fun q5(

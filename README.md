@@ -5,7 +5,7 @@
 
 kotlin multiplatform json5 for [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
 
-supports: jvm, Android, linux, Windows, macOS, iOS, watchOS, tvOS
+complete multiplatform support: jvm/js/native
 
 ## Usage
 

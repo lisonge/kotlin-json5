@@ -1,6 +1,6 @@
 package li.songe.json5
 
-data class Json5EncoderConfig(
+public data class Json5EncoderConfig(
     val indent: String = "",
     val quoteStrategy: Json5QuoteStrategy = Json5QuoteStrategy.Single,
     val unquotedKey: Boolean = true,

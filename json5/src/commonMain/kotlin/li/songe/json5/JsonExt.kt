@@ -6,9 +6,9 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.serializer
 
-inline fun <reified T> Json.encodeToJson5String(
+public inline fun <reified T> Json.encodeToJson5String(
     value: T,
-    config: Json5EncoderConfig = Json5EncoderConfig(),
+    config: Json5EncoderConfig = Json5.encoderConfig,
 ): String {
     return Json5.encodeToString(
         encodeToJsonElement(serializersModule.serializer(), value),
@@ -16,6 +16,6 @@ inline fun <reified T> Json.encodeToJson5String(
     )
 }
 
-inline fun <reified T> Json.decodeFromJson5String(value: CharSequence): T {
+public inline fun <reified T> Json.decodeFromJson5String(value: CharSequence): T {
     return decodeFromJsonElement<T>(Json5.parseToJson5Element(value))
 }

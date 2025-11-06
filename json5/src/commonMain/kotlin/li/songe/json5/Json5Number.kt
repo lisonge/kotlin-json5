@@ -1,8 +1,8 @@
 package li.songe.json5
 
 // just for keep raw number format
-class Json5Number(
-    val value: String,
+public class Json5Number(
+    public val value: String,
 ) : Number() {
     override fun toString(): String {
         return value
