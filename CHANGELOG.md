@@ -1,3 +1,5 @@
 # What's Changed
 
-- perf: make char to visible when error
+- feat: complete multiplatform support
+- feat: expose Json5QuoteStrategy api
+
