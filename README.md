@@ -7,8 +7,6 @@ kotlin multiplatform [json5](https://json5.org) for [kotlinx.serialization](http
 
 complete multiplatform support: jvm/js/native
 
-it not support comments(ignored) in json5 strings
-
 ## Usage
 
 ```kotlin
@@ -86,3 +84,7 @@ val formatted: String = json.encodeToJson5String(A(id=0))
 ```
 
 or use [Json5EncoderConfig](json5/src/commonMain/kotlin/li/songe/json5/Json5EncoderConfig.kt)
+
+## Additional
+
+comments is ignored in json5 strings
