@@ -5,7 +5,7 @@
 
 kotlin multiplatform json5 for [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
 
-**complete multiplatform support: jvm/js/native**
+`complete multiplatform support: jvm/js/native`
 
 ## Usage
 
@@ -75,7 +75,6 @@ Object -> Json5String
 
 val json = Json {
   // add your json config
-  ignoreUnknownKeys = true
 }
 
 @Serializable
