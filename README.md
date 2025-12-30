@@ -3,9 +3,11 @@
 [![Maven Central](https://img.shields.io/maven-central/v/li.songe/json5.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/li.songe/json5)
 [![License](http://img.shields.io/:License-Apache-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-kotlin multiplatform json5 for [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
+kotlin multiplatform [json5](https://json5.org) for [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)
 
-`complete multiplatform support: jvm/js/native`
+complete multiplatform support: jvm/js/native
+
+it not support comments(ignored) in json5 strings
 
 ## Usage
 
