@@ -1,100 +1,139 @@
 package li.songe.json5
 
-internal fun isBoundChar(c: Char?): Boolean {
-    c ?: return true
-    return !isIdContinueChar(c)
-}
-
-internal fun BaseParser.peekLiteral(v: String): Boolean {
-    v.forEachIndexed { index, c ->
-        if (input.getOrNull(index + i) != c) {
-            return false
-        }
-    }
-    return isBoundChar(input.getOrNull(i + v.length))
-}
-
-internal fun BaseParser.readLooseComment() {
+internal fun BaseParser.readLooseComment(): Boolean {
     i++
     when (input.getOrNull(i)) {
         '/' -> {
             i++
-            if (end) return
+            if (end) return true
             val endIndex = input.indexOfAny(newLineChars, i)
             i = if (endIndex < 0) {
                 input.length
             } else {
-                endIndex + 1
+                if (input[endIndex] == '\r' && input.getOrNull(endIndex + 1) == '\n') {
+                    endIndex + 2
+                } else {
+                    endIndex + 1
+                }
             }
+            return true
         }
 
         '*' -> {
             i++
             val endIndex = input.indexOf("*/", i)
-            i = if (endIndex < 0) {
-                input.length
+            if (endIndex < 0) {
+                i = input.length
+                return false
             } else {
-                endIndex + 2
+                i = endIndex + 2
+                return true
             }
         }
 
-        else -> i--
+        else -> error("readLooseComment requires a comment opener")
     }
 }
 
-internal fun BaseParser.readLooseString() {
+internal fun BaseParser.readLooseString(): Boolean {
     val wrapChar = char // it must be ' or "
     i++
     while (true) {
-        when (char) {
-            null -> break
+        val current = char ?: return false
+        when (current) {
             wrapChar -> {
                 i++
-                break
+                return true
             }
 
             '\\' -> {
                 i++
-                if (end) break
-                i++
+                when (char) {
+                    null -> return false
+                    '\r' -> {
+                        i++
+                        if (char == '\n') {
+                            i++
+                        }
+                    }
+
+                    else -> i++
+                }
             }
 
+            '\n', '\r' -> return false
             else -> i++
         }
     }
 }
 
-internal fun BaseParser.readLooseNumber(): Json5Token {
-    val startChar = char!!
-    if (startChar == 'N') {
-        if (peekLiteral("NaN")) {
-            i += 3
-            return Json5Token.NumberLiteral
-        }
-    } else if (startChar == 'I') {
-        if (peekLiteral("Infinity")) {
-            i += 8
-            return Json5Token.NumberLiteral
-        }
-    } else {
+internal fun BaseParser.readLooseNumber(): Boolean {
+    val start = i
+    if (char == '+' || char == '-') {
         i++
-        while (!end) {
-            val c = input[i]
-            if (c !in "-+." && isBoundChar(c)) {
-                break
-            }
+    }
+
+    if (char == 'N' || char == 'I') {
+        readLooseIdentifier()
+        val value = input.subSequence(start, i).toString()
+        return value == "NaN" || value == "+NaN" || value == "-NaN" ||
+            value == "Infinity" || value == "+Infinity" || value == "-Infinity"
+    }
+
+    val unsignedStart = i
+    if (char == '0' && (input.getOrNull(i + 1) == 'x' || input.getOrNull(i + 1) == 'X')) {
+        i += 2
+        val digitsStart = i
+        while (isHexDigit(char)) {
             i++
         }
-        return Json5Token.NumberLiteral
+        return i > digitsStart
     }
-    // readLooseProperty
-    readLooseProperty()
-    return Json5Token.Property
+
+    var hasDigit = false
+    while (true) {
+        when (char ?: break) {
+            in '0'..'9' -> {
+                hasDigit = true
+                i++
+            }
+
+            '+', '-', '.', 'e', 'E' -> i++
+            else -> break
+        }
+    }
+    val lastChar = input.getOrNull(i - 1)
+    return i > unsignedStart && hasDigit && lastChar != '+' && lastChar != '-' && lastChar != 'e' && lastChar != 'E'
 }
 
-internal fun BaseParser.readLooseProperty() {
-    i++
-    while (!end && isIdContinueChar(input[i])) {
-        i++
+internal fun BaseParser.readLooseIdentifier(): Boolean {
+    var isFirst = true
+    var isComplete = true
+    while (!end) {
+        val c = char!!
+        if (c == '\\') {
+            i++
+            if (char != 'u') {
+                isComplete = false
+                isFirst = false
+                continue
+            }
+            i++
+            var hexLength = 0
+            while (hexLength < 4 && isHexDigit(char)) {
+                i++
+                hexLength++
+            }
+            if (hexLength != 4) {
+                isComplete = false
+            }
+            isFirst = false
+        } else if ((isFirst && isIdStartChar(c)) || (!isFirst && isIdContinueChar(c))) {
+            i++
+            isFirst = false
+        } else {
+            break
+        }
     }
+    return isComplete
 }

@@ -42,15 +42,9 @@ data class A(val id:Int)
 val a = json.decodeFromJson5String<A>("{id:0, b:''}")
 ```
 
-### Decode Json5Token
+### Tokenize JSON5
 
-Json5String -> Json5Token
-
-```kotlin
-val (element, ranges) = Json5.parseToJson5ElementAndRanges("{a:1}")
-```
-
-Loose Json5String -> Json5Token
+JSON5 text, including incomplete input, to token ranges
 
 ```kotlin
 val ranges = Json5.parseToJson5LooseRanges("{a:1,]{")

@@ -182,30 +182,4 @@ internal class Json5Decoder(override val input: CharSequence) : BaseParser {
         })
     }
 
-    fun readElementAndRange(): Pair<JsonElement, List<Json5Range>> {
-        var lastToken: Json5Token? = null
-        var lastIndex = 0
-        val tokenList = mutableListOf<Json5Range>()
-        val element = read(buildTokenSeq().onEach { token ->
-            lastToken?.let {
-                tokenList.add(
-                    Json5Range(
-                        start = lastIndex,
-                        end = i,
-                        token = it,
-                    )
-                )
-            }
-            lastIndex = i
-            lastToken = token
-        })
-        tokenList.add(
-            Json5Range(
-                start = lastIndex,
-                end = i,
-                token = lastToken!!,
-            )
-        )
-        return element to tokenList
-    }
 }

@@ -14,10 +14,6 @@ public object Json5 {
         return innerEncodeToString(element, config)
     }
 
-    public fun parseToJson5ElementAndRanges(input: CharSequence): Pair<JsonElement, List<Json5Range>> {
-        return Json5Decoder(input).readElementAndRange()
-    }
-
     public fun parseToJson5LooseRanges(input: CharSequence): List<Json5LooseRange> {
         return Json5LooseDecoder(input).read()
     }

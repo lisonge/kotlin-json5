@@ -94,7 +94,7 @@ internal fun BaseParser.readBoolean(): Boolean {
     }
 }
 
-private fun BaseParser.readDigit() {
+private fun BaseParser.readDecimalDigits() {
     val start = i
     while (isDigit(char)) {
         i++
@@ -104,19 +104,19 @@ private fun BaseParser.readDigit() {
     }
 }
 
-private fun BaseParser.readNumberPower() {
+private fun BaseParser.readExponent() {
     i++
     if (char == '-' || char == '+') {
         i++
     }
-    readDigit()
+    readDecimalDigits()
 }
 
 // json5 number -> json number
 // 1. -> 1
 // .1 -> 0.1
 // +1 -> 1
-private fun BaseParser.readUNumber(): Json5Number {
+private fun BaseParser.readUnsignedNumber(): Json5Number {
     return when (char) {
         'N' -> {
             readLiteral("NaN")
@@ -132,12 +132,12 @@ private fun BaseParser.readUNumber(): Json5Number {
             // .123 -> 0.123
             var start = i
             i++
-            readDigit()
+            readDecimalDigits()
             val numPart = "0" + input.substring(start, i)
 
             if (isPowerStartChar(char)) {
                 start = i
-                readNumberPower()
+                readExponent()
                 val power = input.substring(start, i)
                 Json5Number(numPart + power)
             } else {
@@ -171,7 +171,7 @@ private fun BaseParser.readUNumber(): Json5Number {
                 while (!end && isHexDigit(char)) {
                     i++
                 }
-                Json5Number(hexToDecimal(input.substring(start + 2, i)))
+                Json5Number(hexToDecimalString(input.substring(start + 2, i)))
             } else {
                 var hasPoint = false // 1.2
                 while (!end) {
@@ -195,13 +195,13 @@ private fun BaseParser.readUNumber(): Json5Number {
                 }
                 if (numPart == "0") { // 0e233 -> 0
                     if (isPowerStartChar(char)) {
-                        readNumberPower()
+                        readExponent()
                     }
                     Json5Number("0")
                 } else {
                     if (isPowerStartChar(char)) {
                         start = i
-                        readNumberPower()
+                        readExponent()
                         val power = input.substring(start, i)
                         Json5Number(numPart + power)
                     } else {
@@ -222,16 +222,16 @@ private fun BaseParser.readUNumber(): Json5Number {
 internal fun BaseParser.readNumber(): Json5Number = when (char) {
     '-' -> {
         i++
-        val n = readUNumber()
+        val n = readUnsignedNumber()
         Json5Number("-$n")
     }
 
     '+' -> {
         i++
-        readUNumber()
+        readUnsignedNumber()
     }
 
-    else -> readUNumber()
+    else -> readUnsignedNumber()
 }
 
 // https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L570
@@ -242,6 +242,7 @@ internal fun BaseParser.readString(): String {
     for (j in i..input.lastIndex) {
         when (input[j]) {
             '\\' -> break
+            '\n', '\r' -> break
             wrapChar -> return input.substring(i, j).apply {
                 i = j + 1
             }
