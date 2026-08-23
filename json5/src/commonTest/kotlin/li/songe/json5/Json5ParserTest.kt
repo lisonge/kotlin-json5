@@ -3,12 +3,13 @@ package li.songe.json5
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Json5ParserTest {
-    private fun parseJson5(source: String) = Json5.parseToJson5Element(source)
+    private fun parseJson5(source: String) = Json5.parseToJsonElement(source)
 
     private fun parseJson(source: String) = Json.parseToJsonElement(source)
 
@@ -101,5 +102,32 @@ class Json5ParserTest {
         assertEquals(parseJson("{}"), parseJson5(" {/*comment\n** */} "))
         assertEquals(parseJson("{}"), parseJson5("{\t\u000B\u000C \u00A0\uFEFF\n\r\u2028\u2029\u2003}"))
         assertEquals(parseJson("{}"), parseJson5("{}//"))
+    }
+
+    @Test
+    fun directSemanticParsingMatchesLosslessDocumentConversion() {
+        val sources = listOf(
+            "null",
+            "[1,.2,0x10,NaN,Infinity,]",
+            "{a:1,a:'last',nested:{enabled:true},list:[false,null]}",
+            "// head\r\n{key/* name */:/* value */'text'}// tail",
+        )
+
+        for (source in sources) {
+            assertEquals(
+                Json5.parseToJsonElement(source),
+                Json5.parseToDocument(source).toJsonElement(),
+                source,
+            )
+        }
+    }
+
+    @Test
+    fun directSemanticParsingDoesNotUseTheCallStack() {
+        val depth = 2_000
+        var value = Json5.parseToJsonElement("[".repeat(depth) + "0" + "]".repeat(depth))
+
+        repeat(depth) { value = value.jsonArray.single() }
+        assertEquals(JsonPrimitive(0), value)
     }
 }

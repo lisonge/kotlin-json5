@@ -3,8 +3,16 @@ package li.songe.json5
 import kotlinx.serialization.json.JsonElement
 
 public object Json5 {
-    public fun parseToJson5Element(input: CharSequence): JsonElement {
-        return Json5Decoder(input).read()
+    public fun tokenize(input: CharSequence): List<Json5Token> {
+        return tokenizeJson5(input.toString())
+    }
+
+    public fun parseToDocument(input: CharSequence): Json5Document {
+        return parseJson5Document(input.toString())
+    }
+
+    public fun parseToJsonElement(input: CharSequence): JsonElement {
+        return parseJson5Element(input.toString())
     }
 
     public fun encodeToString(
@@ -14,9 +22,23 @@ public object Json5 {
         return innerEncodeToString(element, config)
     }
 
-    public fun parseToJson5LooseRanges(input: CharSequence): List<Json5LooseRange> {
-        return Json5LooseDecoder(input).read()
+    public fun format(
+        input: CharSequence,
+        config: Json5FormatConfig = formatConfig,
+    ): String {
+        val document = parseToDocument(input).requireValid()
+        return formatJson5Document(document, config)
+    }
+
+    public fun formatToEdits(
+        input: CharSequence,
+        config: Json5FormatConfig = formatConfig,
+    ): List<Json5TextEdit> {
+        val source = input.toString()
+        return singleReplacementEdit(source, format(source, config))
     }
 
     public val encoderConfig: Json5EncoderConfig = Json5EncoderConfig()
+
+    public val formatConfig: Json5FormatConfig = Json5FormatConfig()
 }

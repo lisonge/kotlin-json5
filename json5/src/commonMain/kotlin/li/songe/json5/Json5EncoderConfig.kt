@@ -5,4 +5,8 @@ public data class Json5EncoderConfig(
     val quoteStrategy: Json5QuoteStrategy = Json5QuoteStrategy.Single,
     val unquotedKey: Boolean = true,
     val trailingComma: Boolean = false,
-)
+) {
+    init {
+        requireValidJson5Indent(indent)
+    }
+}

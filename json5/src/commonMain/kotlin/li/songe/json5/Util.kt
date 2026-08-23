@@ -1,7 +1,5 @@
 package li.songe.json5
 
-import kotlinx.serialization.json.JsonElement
-
 private val unicodeLetterCategories = hashSetOf(
     CharCategory.UPPERCASE_LETTER,
     CharCategory.LOWERCASE_LETTER,
@@ -41,9 +39,10 @@ internal fun isPowerStartChar(c: Char?): Boolean {
     return c == 'e' || c == 'E'
 }
 
-internal fun isHexStartChar(c: Char?): Boolean {
-    c ?: return false
-    return c == 'x' || c == 'X'
+internal fun requireValidJson5Indent(indent: String) {
+    for (char in indent) {
+        require(char == ' ' || char == '\t') { "indent may only contain spaces or tabs" }
+    }
 }
 
 // https://github.com/json5/json5/blob/b935d4a280eafa8835e6182551b63809e61243b0/lib/parse.js#L135-L144
@@ -55,31 +54,3 @@ internal const val whiteSpaceChars =
 internal val newLineChars = "\u000A\u000D\u2028\u2029".toCharArray()
 
 internal fun <T> MutableList<T>.pop(): T = removeAt(lastIndex)
-
-@Suppress("UNCHECKED_CAST")
-internal fun Any.toJsonMap() = this as MutableMap<String, JsonElement>
-
-@Suppress("UNCHECKED_CAST")
-internal fun Any.toJsonList() = this as MutableList<JsonElement>
-
-// inMap: null, true, false, Infinity, NaN can be property name
-internal fun BaseParser.charToJson5Token(inMapLeft: Boolean = false): Json5Token? = when (val c = input[i]) {
-    '{' -> Json5Token.LeftBrace
-    '}' -> Json5Token.RightBrace
-    '[' -> Json5Token.LeftBracket
-    ']' -> Json5Token.RightBracket
-    ':' -> Json5Token.Colon
-    ',' -> Json5Token.Comma
-    'n' -> if (inMapLeft) Json5Token.Property else Json5Token.NullLiteral
-    't', 'f' -> if (inMapLeft) Json5Token.Property else Json5Token.BooleanLiteral
-    'N', 'I' -> if (inMapLeft) Json5Token.Property else Json5Token.NumberLiteral
-    in '0'..'9', '-', '+', '.' -> Json5Token.NumberLiteral
-    '\'', '"' -> Json5Token.StringLiteral
-    '/' -> Json5Token.Comment
-    in whiteSpaceChars -> Json5Token.Whitespace
-    else -> if (c == '\\' || isIdStartChar(c)) {
-        Json5Token.Property
-    } else {
-        null
-    }
-}

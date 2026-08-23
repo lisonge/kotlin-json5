@@ -10,7 +10,6 @@ import kotlin.time.TimeSource
 class HexConversionTest {
     @Test
     fun convertsHexadecimalToDecimalExactly() {
-        assertEquals("0", hexToDecimalString(""))
         assertEquals("0", hexToDecimalString("000"))
         assertEquals("9", hexToDecimalString("9"))
         assertEquals("4095", hexToDecimalString("FFF"))

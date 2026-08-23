@@ -3,6 +3,7 @@ package li.songe.json5
 import kotlinx.serialization.json.JsonPrimitive
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class Json5EncoderTest {
     private fun encodeString(
@@ -17,7 +18,7 @@ class Json5EncoderTest {
 
     @Test
     fun encodesNestedElementsWithIndentation() {
-        val element = Json5.parseToJson5Element("{'a-1':1,b:{c:['d',{f:233,h:'str'},NaN]}}")
+        val element = Json5.parseToJsonElement("{'a-1':1,b:{c:['d',{f:233,h:'str'},NaN]}}")
 
         assertEquals(
             """
@@ -65,5 +66,14 @@ class Json5EncoderTest {
             """  'a"'  """.trim(),
             encodeWithQuoteStrategy("""  a"  """.trim(), Json5QuoteStrategy.PreferDouble),
         )
+    }
+
+    @Test
+    fun rejectsIndentationThatCannotProduceValidJson5() {
+        for (indent in listOf("x", "\n", " \tx")) {
+            assertFailsWith<IllegalArgumentException> {
+                Json5EncoderConfig(indent = indent)
+            }
+        }
     }
 }

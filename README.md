@@ -21,7 +21,7 @@ Json5String -> JsonElement
 ```kotlin
 // import li.songe.json5.Json5
 
-val element = Json5.parseToJson5Element("{a:1}")
+val element = Json5.parseToJsonElement("{a:1}")
 ```
 
 Json5String -> Object
@@ -42,13 +42,55 @@ data class A(val id:Int)
 val a = json.decodeFromJson5String<A>("{id:0, b:''}")
 ```
 
-### Tokenize JSON5
+### Parse JSON5 syntax
 
-JSON5 text, including incomplete input, to token ranges
+JSON5 text, including incomplete input, to a source-aware document
 
 ```kotlin
-val ranges = Json5.parseToJson5LooseRanges("{a:1,]{")
+val document = Json5.parseToDocument("{a:1,]{")
+val tokens = document.tokens
+val diagnostics = document.diagnostics
 ```
+
+For syntax highlighting, tokenize the input without building an AST or binding
+comments to nodes:
+
+```kotlin
+val tokens = Json5.tokenize(source)
+for (token in tokens) {
+    highlight(token.range, token.kind)
+}
+```
+
+`tokenize` performs lexical scanning only. It returns whitespace, line breaks,
+comments, and invalid tokens, and accepts incomplete or syntactically invalid
+input.
+
+### Lossless AST
+
+Parse JSON5 into a source-aware document. The document keeps property order,
+duplicate properties, comments, tokens, source ranges, and recoverable diagnostics.
+
+```kotlin
+val document = Json5.parseToDocument(
+    """
+    {
+      // server port
+      port: 8080,
+    }
+    """.trimIndent(),
+)
+
+val root = document.root
+val comments = document.comments
+val element = document.toJsonElement()
+val port = document[Json5Path["port"]]
+```
+
+`parseToDocument` recovers incomplete JSON5 and reports syntax diagnostics.
+Formatting, semantic conversion, and structural editing require a valid document.
+Duplicate object properties stay distinct in the AST;
+conversion to `JsonElement` keeps the last value for compatibility.
 
 ## Encode
 
@@ -79,6 +121,103 @@ val formatted: String = json.encodeToJson5String(A(id=0))
 
 or use [Json5EncoderConfig](json5/src/commonMain/kotlin/li/songe/json5/Json5EncoderConfig.kt)
 
+## Format
+
+Formatting preserves comments and raw literals such as quote style and
+hexadecimal numbers.
+
+```kotlin
+val formatted = Json5.format(
+    "{port:0x1f90,// default\nenabled:true,}",
+)
+```
+
+Use `Json5FormatConfig` to configure indentation, line separators, trailing
+commas, and the final newline. Editor integrations can call
+`Json5.formatToEdits` and apply the result with `source.applyJson5Edits(edits)`.
+
+## Edit
+
+Source-aware edits only replace the selected ranges and preserve unrelated
+comments and formatting.
+
+```kotlin
+val path = Json5Path["server"]["port"]
+val result = Json5.parseToDocument(source).set(path, JsonPrimitive(8080))
+
+val editedText = result.text
+val updatedDocument = result.document
+```
+
+The editing API also supports removing values, renaming or adding properties,
+inserting array elements, and adding or removing comments. A property path can
+specify an occurrence index when an object contains duplicate property names;
+without one, the last matching property is selected.
+
+Add a comment before or after the node selected by a path:
+
+```kotlin
+val document = Json5.parseToDocument(source)
+val path = Json5Path["server"]["port"]
+
+val before = document.addCommentBefore(path, "TCP port")
+val after = before.document.addCommentAfter(
+    path,
+    "May be overridden",
+    kind = Json5CommentKind.Block,
+)
+```
+
+Use `removeComment` with a comment from the same document:
+
+```kotlin
+val comment = document.comments.first()
+val result = document.removeComment(comment)
+```
+
+Adding a node and attaching a comment are separate operations. Run the comment
+operation on the document returned by the insertion:
+
+```kotlin
+val inserted = document.putProperty(
+    Json5Path.Root,
+    "timeout",
+    JsonPrimitive(30),
+)
+val commented = inserted.document.addCommentBefore(
+    Json5Path["timeout"],
+    "Seconds",
+)
+val editedText = commented.text
+```
+
+The high-level API does not currently update comment content. Replace the full
+comment range with a `Json5TextEdit`, then parse the updated text:
+
+```kotlin
+val comment = document.comments.first()
+val replacement = when (comment.kind) {
+    Json5CommentKind.Line -> "// Updated comment"
+    Json5CommentKind.Block -> "/* Updated comment */"
+}
+val edit = Json5TextEdit(
+    offset = comment.range.start,
+    length = comment.range.length,
+    content = replacement,
+)
+val editedText = document.source.applyJson5Edits(listOf(edit))
+val updatedDocument = Json5.parseToDocument(editedText)
+```
+
+Each `Json5EditResult.edits` list is relative to the document used for that
+operation. Do not concatenate edits from chained operations. Use the final
+`text`, or apply each edit list before starting the next operation.
+
+`Json5Object` and `Json5Array` are iterable, and arrays also support indexed
+access with `array[index]`.
+
 ## Additional
 
-comments is ignored in json5 strings
+`parseToJsonElement` intentionally ignores comments because `JsonElement`
+cannot represent them. Use `parseToDocument` whenever comments or original
+source syntax must be preserved.
