@@ -3,8 +3,19 @@ package li.songe.json5
 import kotlinx.serialization.json.JsonElement
 
 public object Json5 {
-    public fun tokenize(input: CharSequence): List<Json5Token> {
-        return tokenizeJson5(input.toString())
+    public fun scanSyntax(
+        input: CharSequence,
+        ignoreWhitespace: Boolean = true,
+    ): Json5SyntaxTokens {
+        return scanJson5Syntax(input, ignoreWhitespace)
+    }
+
+    public fun scanSyntax(
+        input: CharSequence,
+        ignoreWhitespace: Boolean = true,
+        consumer: Json5SyntaxConsumer,
+    ) {
+        scanJson5Syntax(input, ignoreWhitespace, consumer)
     }
 
     public fun parseToDocument(input: CharSequence): Json5Document {

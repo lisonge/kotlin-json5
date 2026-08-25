@@ -52,19 +52,35 @@ val tokens = document.tokens
 val diagnostics = document.diagnostics
 ```
 
-For syntax highlighting, tokenize the input without building an AST or binding
-comments to nodes:
+For fast, tolerant syntax highlighting, scan the input without building an AST,
+decoding values, or producing diagnostics:
 
 ```kotlin
-val tokens = Json5.tokenize(source)
-for (token in tokens) {
-    highlight(token.range, token.kind)
+Json5.scanSyntax(source) { kind, start, end ->
+    highlight(start, end, kind)
 }
 ```
 
-`tokenize` performs lexical scanning only. It returns whitespace, line breaks,
-comments, and invalid tokens, and accepts incomplete or syntactically invalid
-input.
+The callback overload emits each span synchronously without retaining a token
+result. Whitespace is scanned for recovery but omitted by default; pass
+`ignoreWhitespace = false` when a complete token tape is needed. To scan ahead
+and cache theme-independent spans, use the materialized overload:
+
+```kotlin
+val syntax = Json5.scanSyntax(source)
+for (index in syntax.indices) {
+    highlight(
+        syntax.startAt(index),
+        syntax.endAt(index),
+        syntax.kindAt(index),
+    )
+}
+```
+
+`scanSyntax` distinguishes property names, null and boolean literals, numbers,
+strings, comments, and invalid fragments. It accepts incomplete or syntactically
+invalid input. Materialized results are compact and read-only, backed by one
+integer array.
 
 ### Lossless AST
 

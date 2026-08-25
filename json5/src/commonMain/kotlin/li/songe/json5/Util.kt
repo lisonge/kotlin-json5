@@ -1,27 +1,33 @@
 package li.songe.json5
 
-private val unicodeLetterCategories = hashSetOf(
-    CharCategory.UPPERCASE_LETTER,
-    CharCategory.LOWERCASE_LETTER,
-    CharCategory.TITLECASE_LETTER,
-    CharCategory.MODIFIER_LETTER,
-    CharCategory.OTHER_LETTER,
-    CharCategory.LETTER_NUMBER,
-)
-
-private val unicodeIdCategories = hashSetOf(
-    CharCategory.NON_SPACING_MARK,
-    CharCategory.COMBINING_SPACING_MARK,
-    CharCategory.DECIMAL_DIGIT_NUMBER,
-    CharCategory.CONNECTOR_PUNCTUATION,
-)
-
 internal fun isIdStartChar(c: Char): Boolean {
-    return c == '_' || c == '$' || c.category in unicodeLetterCategories
+    if (c == '_' || c == '$' || c in 'A'..'Z' || c in 'a'..'z') return true
+    if (c.code < ASCII_LIMIT) return false
+    return when (c.category) {
+        CharCategory.UPPERCASE_LETTER,
+        CharCategory.LOWERCASE_LETTER,
+        CharCategory.TITLECASE_LETTER,
+        CharCategory.MODIFIER_LETTER,
+        CharCategory.OTHER_LETTER,
+        CharCategory.LETTER_NUMBER,
+        -> true
+
+        else -> false
+    }
 }
 
 internal fun isIdContinueChar(c: Char): Boolean {
-    return isIdStartChar(c) || c.category in unicodeIdCategories || c == '\u200C' || c == '\u200D'
+    if (isIdStartChar(c) || c in '0'..'9') return true
+    if (c.code < ASCII_LIMIT) return false
+    return when (c.category) {
+        CharCategory.NON_SPACING_MARK,
+        CharCategory.COMBINING_SPACING_MARK,
+        CharCategory.DECIMAL_DIGIT_NUMBER,
+        CharCategory.CONNECTOR_PUNCTUATION,
+        -> true
+
+        else -> c == '\u200C' || c == '\u200D'
+    }
 }
 
 internal fun isDigit(c: Char?): Boolean {
@@ -29,8 +35,7 @@ internal fun isDigit(c: Char?): Boolean {
     return c in '0'..'9'
 }
 
-internal fun isHexDigit(c: Char?): Boolean {
-    c ?: return false
+internal fun isHexDigit(c: Char): Boolean {
     return (c in '0'..'9') || (c in 'A'..'F') || (c in 'a'..'f')
 }
 
@@ -54,3 +59,5 @@ internal const val whiteSpaceChars =
 internal val newLineChars = "\u000A\u000D\u2028\u2029".toCharArray()
 
 internal fun <T> MutableList<T>.pop(): T = removeAt(lastIndex)
+
+private const val ASCII_LIMIT = 0x80

@@ -1,5 +1,4 @@
 # What's Changed
 
-- feat!: replace the legacy parser with recoverable, lossless syntax tooling for tokenization, formatting, comments, and source-aware editing
-- breaking: rename `parseToJson5Element` to `parseToJsonElement`, replace the `Json5Token` model, and remove x64 Apple, Windows, and Android Native targets
-- fix: correct the bundled Apache License text
+- breaking: replace `Json5.tokenize` with tolerant `Json5.scanSyntax` highlighting spans that distinguish property names and literals and omit whitespace by default
+- perf: add synchronous streaming spans and compact preloaded results backed by integer arrays

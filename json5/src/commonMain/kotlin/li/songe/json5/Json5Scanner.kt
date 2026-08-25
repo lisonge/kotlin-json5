@@ -40,14 +40,6 @@ internal data class Json5ScannedDiagnosticToken(
     val diagnostic: Json5Diagnostic,
 ) : Json5ScannedToken
 
-internal fun tokenizeJson5(source: String): List<Json5Token> = buildList {
-    val scanner = Json5Scanner(source)
-    while (true) {
-        val scanned = scanner.nextToken() ?: break
-        add(Json5Token(scanned.range, scanned.kind))
-    }
-}
-
 internal class Json5Scanner(
     private val source: String,
 ) {
@@ -280,7 +272,7 @@ internal class Json5Scanner(
     private fun readHexEscape(length: Int): Pair<Char?, Json5Diagnostic?> {
         val hexStart = index
         var count = 0
-        while (count < length && isHexDigit(source.getOrNull(index))) {
+        while (count < length && index < source.length && isHexDigit(source[index])) {
             index++
             count++
         }
@@ -392,7 +384,7 @@ internal class Json5Scanner(
         ) {
             index += 2
             val digitsStart = index
-            while (isHexDigit(source.getOrNull(index))) index++
+            while (index < source.length && isHexDigit(source[index])) index++
             if (digitsStart == index) {
                 firstDiagnostic = diagnostic(
                     Json5DiagnosticCode.InvalidNumber,
