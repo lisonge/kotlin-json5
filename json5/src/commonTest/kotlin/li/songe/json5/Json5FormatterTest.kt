@@ -45,6 +45,74 @@ class Json5FormatterTest {
     }
 
     @Test
+    fun normalizesStringAndPropertyQuotesWhilePreservingComments() {
+        val source = """{"title":"value",'not-valid':"say \"hi\"",/* note */ "keep_key":'plain'}"""
+        val config = Json5FormatConfig(
+            trailingComma = Json5TrailingComma.Always,
+            quoteStrategy = Json5QuoteStrategy.PreferSingle,
+        )
+        val expected = """
+            {
+              title: 'value',
+              'not-valid': 'say "hi"', /* note */ keep_key: 'plain',
+            }
+        """.trimIndent()
+
+        val formatted = Json5.format(source, config)
+
+        assertEquals(expected, formatted)
+        assertEquals(documentCommentContents(source), documentCommentContents(formatted))
+        assertEquals(Json5.parseToJsonElement(source), Json5.parseToJsonElement(formatted))
+        assertEquals(formatted, Json5.format(formatted, config))
+        assertEquals(emptyList(), Json5.formatToEdits(formatted, config))
+    }
+
+    @Test
+    fun canQuoteAllPropertyNamesDuringNormalization() {
+        assertEquals(
+            "{\n  'key': 'value'\n}",
+            Json5.format(
+                "{key:\"value\"}",
+                Json5FormatConfig(
+                    quoteStrategy = Json5QuoteStrategy.Single,
+                    unquotedKey = false,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun normalizesNestedStringsAndEscapeSequences() {
+        val source = """{"items":["\x41",{"nested":"value"}]}"""
+        val expected = """
+            {
+              items: [
+                'A',
+                {
+                  nested: 'value'
+                }
+              ]
+            }
+        """.trimIndent()
+
+        assertEquals(
+            expected,
+            Json5.format(
+                source,
+                Json5FormatConfig(quoteStrategy = Json5QuoteStrategy.Single),
+            ),
+        )
+    }
+
+    @Test
+    fun preservesRawStringAndPropertyNameLiteralsByDefault() {
+        assertEquals(
+            "{\n  \"quoted-key\": '\\x41'\n}",
+            Json5.format("""{"quoted-key":'\x41'}"""),
+        )
+    }
+
+    @Test
     fun returnsApplicableTextEdits() {
         val source = "{a:1,b:2}"
         val edits = Json5.formatToEdits(source)

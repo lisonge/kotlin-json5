@@ -19,9 +19,14 @@ public enum class Json5SyntaxKind {
 }
 
 public fun interface Json5SyntaxConsumer {
+    /** Receives a syntax span from [start] inclusive to [end] exclusive. */
     public fun accept(kind: Json5SyntaxKind, start: Int, end: Int)
 }
 
+/**
+ * A compact, immutable sequence of syntax kinds and source ranges.
+ * Each start offset is inclusive and its corresponding end offset is exclusive.
+ */
 public class Json5SyntaxTokens internal constructor(
     private val data: IntArray,
 ) {

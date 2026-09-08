@@ -1,6 +1,10 @@
 package li.songe.json5
 
 public sealed interface Json5PathSegment {
+    /**
+     * Selects a property by [name]. A `null` [occurrence] selects the last
+     * duplicate; otherwise it is a zero-based occurrence from source order.
+     */
     public data class Property(
         public val name: String,
         public val occurrence: Int? = null,
@@ -19,6 +23,7 @@ public sealed interface Json5PathSegment {
     }
 }
 
+/** An immutable path from the document root to an object property or array element. */
 public class Json5Path(
     segments: List<Json5PathSegment>,
 ) {

@@ -17,6 +17,7 @@ public enum class Json5TokenKind {
     Invalid,
     ;
 
+    /** Whether this kind represents whitespace, a line break, or a comment. */
     public val isTrivia: Boolean
         get() = this == Whitespace || this == LineBreak ||
             this == LineComment || this == BlockComment

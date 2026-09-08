@@ -1,6 +1,9 @@
 package li.songe.json5
 
-// just for keep raw number format
+/**
+ * A parsed JSON5 number in normalized form. Use [Json5Document.text] with the
+ * containing [Json5NumberLiteral] when the original source spelling is needed.
+ */
 public class Json5Number internal constructor(
     public val value: String,
 ) : Number() {

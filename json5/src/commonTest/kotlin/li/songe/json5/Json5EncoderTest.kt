@@ -6,15 +6,10 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class Json5EncoderTest {
-    private fun encodeString(
-        value: String,
-        config: Json5EncoderConfig = Json5.encoderConfig,
-    ) = Json5.encodeToString(JsonPrimitive(value), config)
-
     private fun encodeWithQuoteStrategy(
         value: String,
         strategy: Json5QuoteStrategy,
-    ) = encodeString(value, Json5EncoderConfig(quoteStrategy = strategy))
+    ) = Json5.encodeString(value, Json5EncoderConfig(quoteStrategy = strategy))
 
     @Test
     fun encodesNestedElementsWithIndentation() {
@@ -65,6 +60,28 @@ class Json5EncoderTest {
         assertEquals(
             """  'a"'  """.trim(),
             encodeWithQuoteStrategy("""  a"  """.trim(), Json5QuoteStrategy.PreferDouble),
+        )
+    }
+
+    @Test
+    fun encodesStandaloneStringsAndPropertyNames() {
+        assertEquals("'a\\'b'", Json5.encodeString("a'b"))
+        assertEquals("title", Json5.encodeKey("title"))
+        assertEquals("'not-valid'", Json5.encodeKey("not-valid"))
+        assertEquals(
+            "\"not-valid\"",
+            Json5.encodeKey(
+                "not-valid",
+                Json5EncoderConfig(quoteStrategy = Json5QuoteStrategy.Double),
+            ),
+        )
+        assertEquals(
+            "'title'",
+            Json5.encodeKey("title", Json5EncoderConfig(unquotedKey = false)),
+        )
+        assertEquals(
+            Json5.encodeToString(JsonPrimitive("a'b")),
+            Json5.encodeString("a'b"),
         )
     }
 

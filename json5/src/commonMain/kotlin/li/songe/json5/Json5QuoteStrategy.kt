@@ -1,11 +1,12 @@
 package li.songe.json5
 
-
+/**
+ * Selects the quote delimiter for a decoded string value. The `Prefer` strategies
+ * switch delimiters when that avoids an escape; when both or neither delimiter
+ * occurs, they use their named delimiter.
+ */
 public fun interface Json5QuoteStrategy {
-    /**
-     * - true -> single quote
-     * - false -> double quote
-     */
+    /** Returns `true` for a single quote or `false` for a double quote. */
     public fun quote(value: String): Boolean
 
     public data object Single : Json5QuoteStrategy {

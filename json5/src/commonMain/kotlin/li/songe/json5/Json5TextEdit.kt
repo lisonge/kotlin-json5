@@ -1,5 +1,9 @@
 package li.songe.json5
 
+/**
+ * Replaces [length] source positions starting at the zero-based [offset] with [content].
+ * A zero [length] represents an insertion.
+ */
 public data class Json5TextEdit(
     public val offset: Int,
     public val length: Int,
@@ -11,6 +15,12 @@ public data class Json5TextEdit(
     }
 }
 
+/**
+ * Applies non-overlapping [edits] expressed against this original string.
+ * The input list does not need to be sorted.
+ *
+ * @throws IllegalArgumentException if an edit is out of bounds or edits overlap.
+ */
 public fun String.applyJson5Edits(
     edits: List<Json5TextEdit>,
 ): String {

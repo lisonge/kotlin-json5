@@ -7,12 +7,17 @@ public data class Json5EditConfig(
     public val formatConfig: Json5FormatConfig = Json5.formatConfig,
 )
 
+/**
+ * The result of one document edit. [edits] are relative to the source document,
+ * and [document] is parsed from [text] after applying them.
+ */
 public data class Json5EditResult(
     public val text: String,
     public val edits: List<Json5TextEdit>,
     public val document: Json5Document,
 )
 
+/** Replaces only the source range of the value selected by [path]. */
 public fun Json5Document.set(
     path: Json5Path,
     value: JsonElement,
@@ -28,6 +33,10 @@ public fun Json5Document.set(
     )
 }
 
+/**
+ * Removes the property or array element selected by [path], including attached comments.
+ * The document root cannot be removed.
+ */
 public fun Json5Document.remove(path: Json5Path): Json5EditResult {
     val target = requireResolved(path)
     val range = when (target) {
@@ -47,6 +56,7 @@ public fun Json5Document.remove(path: Json5Path): Json5EditResult {
     return applyEdit(Json5TextEdit(range.start, range.length, ""))
 }
 
+/** Renames the object property selected by [path], preserving its value and comments. */
 public fun Json5Document.renameProperty(
     path: Json5Path,
     newName: String,
@@ -63,6 +73,10 @@ public fun Json5Document.renameProperty(
     )
 }
 
+/**
+ * Appends a property to the object selected by [objectPath]. Existing properties
+ * with the same [name] are retained, preserving JSON5 duplicate-property syntax.
+ */
 public fun Json5Document.putProperty(
     objectPath: Json5Path,
     name: String,
@@ -82,6 +96,7 @@ public fun Json5Document.putProperty(
     )
 }
 
+/** Inserts [value] before the element currently at [index], or appends it when [index] equals the array size. */
 public fun Json5Document.insertArrayElement(
     arrayPath: Json5Path,
     index: Int,
@@ -131,6 +146,10 @@ public fun Json5Document.appendArrayElement(
     return insertArrayElement(arrayValue, arrayValue.elements.size, value, config)
 }
 
+/**
+ * Adds delimiter-free [content] before the node selected by [path]. Line-comment
+ * content must not contain a line break, and block-comment content must not contain its closing delimiter.
+ */
 public fun Json5Document.addCommentBefore(
     path: Json5Path,
     content: String,
@@ -145,6 +164,10 @@ public fun Json5Document.addCommentBefore(
     return applyEdit(Json5TextEdit(target.range.start, 0, insertion))
 }
 
+/**
+ * Adds delimiter-free [content] after the node selected by [path]. Line-comment
+ * content must not contain a line break, and block-comment content must not contain its closing delimiter.
+ */
 public fun Json5Document.addCommentAfter(
     path: Json5Path,
     content: String,
@@ -176,6 +199,7 @@ public fun Json5Document.addCommentAfter(
     return applyEdit(Json5TextEdit(offset, 0, insertion))
 }
 
+/** Removes [comment] and immediately preceding horizontal indentation; the comment must belong to this document. */
 public fun Json5Document.removeComment(comment: Json5Comment): Json5EditResult {
     requireValid()
     require(comments.any { it.range == comment.range }) { "comment does not belong to this document" }

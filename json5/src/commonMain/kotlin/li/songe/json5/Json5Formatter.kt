@@ -28,6 +28,7 @@ internal fun formatJson5Document(
 ): String {
     val lineSeparator = selectLineSeparator(document.source, config.lineSeparator)
     val originalFinalNewline = endsWithLineBreak(document.source)
+    val literalReplacements = collectLiteralReplacements(document, config)
     val rawTokens = buildList<Pair<Int, Json5FormatToken>> {
         for (token in document.tokens) {
             if (token.kind.isTrivia) continue
@@ -66,11 +67,18 @@ internal fun formatJson5Document(
             )
         }
         when (current) {
-            is Json5FormatToken.Source -> builder.append(
-                document.source,
-                current.range.start,
-                current.range.end,
-            )
+            is Json5FormatToken.Source -> {
+                val replacement = literalReplacements[current.range]
+                if (replacement == null) {
+                    builder.append(
+                        document.source,
+                        current.range.start,
+                        current.range.end,
+                    )
+                } else {
+                    builder.append(replacement)
+                }
+            }
 
             is Json5FormatToken.Comment -> builder.append(
                 document.source,
@@ -93,6 +101,44 @@ internal fun formatJson5Document(
     result = stripFinalLineBreaks(result)
     if (wantsFinalNewline) result += lineSeparator
     return result
+}
+
+private fun collectLiteralReplacements(
+    document: Json5Document,
+    config: Json5FormatConfig,
+): Map<Json5SourceRange, String> {
+    val quoteStrategy = config.quoteStrategy ?: return emptyMap()
+    val root = document.root ?: return emptyMap()
+    val encoderConfig = Json5EncoderConfig(
+        quoteStrategy = quoteStrategy,
+        unquotedKey = config.unquotedKey,
+    )
+    return buildMap {
+        val stack = mutableListOf<Json5AstNode>(root)
+        while (stack.isNotEmpty()) {
+            when (val node = stack.pop()) {
+                is Json5Object -> for (index in node.properties.indices.reversed()) {
+                    stack.add(node.properties[index])
+                }
+
+                is Json5Array -> for (index in node.elements.indices.reversed()) {
+                    stack.add(node.elements[index])
+                }
+
+                is Json5Property -> {
+                    put(node.name.range, stringifyKey(node.name.value, encoderConfig))
+                    stack.add(node.value)
+                }
+
+                is Json5StringLiteral -> put(
+                    node.range,
+                    stringifyString(node.value, quoteStrategy),
+                )
+
+                else -> Unit
+            }
+        }
+    }
 }
 
 private fun applyTrailingCommaPolicy(

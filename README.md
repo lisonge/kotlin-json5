@@ -118,6 +118,15 @@ JsonElement -> Json5String
 val formatted: String = Json5.encodeToString(element)
 ```
 
+Encode an individual string literal or property name without wrapping it in a
+`JsonElement` or `JsonObject`:
+
+```kotlin
+val config = Json5EncoderConfig(quoteStrategy = Json5QuoteStrategy.PreferSingle)
+val stringLiteral = Json5.encodeString("it's JSON5", config)
+val propertyName = Json5.encodeKey("server-port")
+```
+
 Object -> Json5String
 
 ```kotlin
@@ -140,7 +149,7 @@ or use [Json5EncoderConfig](json5/src/commonMain/kotlin/li/songe/json5/Json5Enco
 ## Format
 
 Formatting preserves comments and raw literals such as quote style and
-hexadecimal numbers.
+hexadecimal numbers by default.
 
 ```kotlin
 val formatted = Json5.format(
@@ -149,7 +158,10 @@ val formatted = Json5.format(
 ```
 
 Use `Json5FormatConfig` to configure indentation, line separators, trailing
-commas, and the final newline. Editor integrations can call
+commas, the final newline, and optional string and property-name re-encoding.
+Set `quoteStrategy` to normalize quotes and `unquotedKey` to control whether
+identifier-compatible property names remain unquoted. Re-encoding may normalize
+escape sequences as well as quote characters. Editor integrations can call
 `Json5.formatToEdits` and apply the result with `source.applyJson5Edits(edits)`.
 
 ## Edit

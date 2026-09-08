@@ -1,4 +1,4 @@
 # What's Changed
 
-- breaking: replace `Json5.tokenize` with tolerant `Json5.scanSyntax` highlighting spans that distinguish property names and literals and omit whitespace by default
-- perf: add synchronous streaming spans and compact preloaded results backed by integer arrays
+- feat: add `Json5.encodeString` and `Json5.encodeKey` for encoding standalone string literals and property names
+- breaking: extend `Json5FormatConfig` with quote normalization options; recompile binaries built against `0.7.0` when upgrading

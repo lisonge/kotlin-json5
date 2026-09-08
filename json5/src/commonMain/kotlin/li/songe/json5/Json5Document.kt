@@ -2,6 +2,10 @@ package li.songe.json5
 
 import kotlinx.serialization.json.JsonElement
 
+/**
+ * A source-aware parse result that retains tokens, comments, ranges, and recoverable diagnostics.
+ * [root] may be `null` when no value could be recovered.
+ */
 public class Json5Document internal constructor(
     public val source: String,
     public val root: Json5Value?,
@@ -18,11 +22,22 @@ public class Json5Document internal constructor(
     public val isValid: Boolean
         get() = diagnostics.isEmpty() && root != null
 
+    /**
+     * Returns this document when it contains one valid root value.
+     *
+     * @throws Json5ParseException for the first diagnostic or when the root is missing.
+     */
     public fun requireValid(): Json5Document {
         requireRoot()
         return this
     }
 
+    /**
+     * Converts the root to a [JsonElement]. Comments and source spelling are discarded;
+     * when object property names are duplicated, the last value is retained.
+     *
+     * @throws Json5ParseException if this document is invalid or has no root.
+     */
     public fun toJsonElement(): JsonElement = requireRoot().toJsonElement()
 
     private fun requireRoot(): Json5Value {
@@ -43,6 +58,7 @@ public class Json5Document internal constructor(
 
     public fun text(node: Json5AstNode): String = text(node.range)
 
+    /** Returns comments attached to [node], optionally filtered by [placement]. */
     public fun commentsOf(
         node: Json5AstNode,
         placement: Json5CommentPlacement? = null,
@@ -50,6 +66,7 @@ public class Json5Document internal constructor(
         comment.ownerNodeId == node.nodeId && (placement == null || comment.placement == placement)
     }
 
+    /** Returns the most specific AST node containing [offset], or `null` outside the root range. */
     public fun findNodeAt(offset: Int): Json5AstNode? {
         if (offset !in source.indices) return null
         var current: Json5AstNode = root?.takeIf { offset in it.range } ?: return null

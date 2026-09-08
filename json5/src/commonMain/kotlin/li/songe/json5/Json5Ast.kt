@@ -6,6 +6,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 
+/** A zero-based, half-open source range from [start] inclusive to [end] exclusive. */
 @ConsistentCopyVisibility
 public data class Json5SourceRange internal constructor(
     public val start: Int,
@@ -23,6 +24,7 @@ public enum class Json5PropertyNameStyle {
     DoubleQuoted,
 }
 
+/** A decoded property name together with its original source style and range. */
 public data class Json5PropertyName(
     public val value: String,
     public val style: Json5PropertyNameStyle,
@@ -66,6 +68,7 @@ public class Json5Property internal constructor(
     nodeId: Int,
 ) : Json5AstNode(range, nodeId)
 
+/** A decoded string value together with its original quote delimiter and source range. */
 public class Json5StringLiteral internal constructor(
     override val range: Json5SourceRange,
     public val value: String,
@@ -95,9 +98,13 @@ public enum class Json5CommentKind {
     Block,
 }
 
+/** Describes how a comment is attached to an AST node or enclosing container. */
 public enum class Json5CommentPlacement {
+    /** Appears before its owner. */
     Leading,
+    /** Appears after its owner on the same source line. */
     Trailing,
+    /** Attached to an enclosing container rather than an adjacent child node. */
     Dangling,
 }
 
@@ -107,6 +114,10 @@ internal enum class Json5CommentSlot {
     BeforePropertyValue,
 }
 
+/**
+ * A source comment. [content] excludes its line- or block-comment delimiters,
+ * while [range] covers the complete token.
+ */
 public class Json5Comment internal constructor(
     public val range: Json5SourceRange,
     public val kind: Json5CommentKind,
